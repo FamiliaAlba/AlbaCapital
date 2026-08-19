@@ -57,10 +57,10 @@ const LandPortfolioShowcase = () => {
       <div className="container mx-auto px-6">
         <div className="mx-auto mb-10 max-w-7xl">
           <p className="text-minimal text-muted-foreground">{t("landPortfolio.kicker")}</p>
-          <h2 className="mt-2 max-w-3xl text-3xl font-light text-architectural md:text-5xl">
+          <h2 className="mt-2 text-3xl font-light text-architectural md:text-5xl">
             {t("landPortfolio.title")}
           </h2>
-          <p className="mt-4 max-w-2xl text-sm leading-relaxed text-muted-foreground md:text-base">
+          <p className="mt-4 text-sm leading-relaxed text-muted-foreground md:text-base">
             {t("landPortfolio.description")}
           </p>
         </div>
