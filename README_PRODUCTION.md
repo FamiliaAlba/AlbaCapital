@@ -7,7 +7,7 @@ Documentación de producción. Leer completo antes de desplegar.
 - Node.js >= 20 (declarado en `package.json` → `engines`)
 - npm >= 10
 - Cuenta de Vercel con acceso al equipo/proyecto
-- Proyecto de Supabase (ID de referencia en `supabase/config.toml`: `foqdqoopqpmhjpktzsyd` — confirmar si es el proyecto real de producción o uno de prueba)
+- Proyecto de Supabase (ID de referencia en `supabase/config.toml`: `ffamwpnrinuxvglcglaq`, proyecto "albacapital" — cuenta separada de otros proyectos como AlbaProp)
 
 ## 2. Instalación
 
@@ -138,7 +138,7 @@ No se declaran los puntajes de Lighthouse (Performance/Accesibilidad/SEO/Buenas 
 6. **Redes sociales**: Instagram/LinkedIn/Facebook no tenían URL real (`href="#"`). Se ocultaron los íconos. Agregar las URLs reales en `src/config/site.ts` (`SOCIAL_LINKS`) cuando estén disponibles.
 7. **Email de contacto**: `hola@albacapital.com` — confirmar que la casilla existe y está monitoreada.
 8. **Número de WhatsApp**: `+54 9 266 465 6146` — confirmar que es el número real de atención y no un dato de prueba.
-9. **ID de proyecto Supabase**: `foqdqoopqpmhjpktzsyd` en `supabase/config.toml` — confirmar que corresponde al proyecto de producción real.
+9. ~~**ID de proyecto Supabase**~~ — resuelto: el proyecto real es `ffamwpnrinuxvglcglaq` ("albacapital"), en una cuenta dedicada separada de otros proyectos (ej. AlbaProp). Configurado en `supabase/config.toml`, `.env` y en las variables de entorno de Vercel.
 10. **Integrantes del equipo**: no se cargó ningún integrante real (correctamente: no se inventaron perfiles). La sección `#equipo` queda oculta hasta que el superadministrador cargue al menos un integrante publicado desde `/admin`.
 11. **Carrusel "Oportunidades activas" en la home** (`src/components/OpportunitiesCarousel.tsx`): las 10 fotografías originales (tierras/campos/complejos turísticos) **nunca existieron como archivos reales** en el proyecto entregado — el código original solo tenía punteros al CDN interno de Lovable (`/__l5e/assets-v1/...`), una ruta que no existe fuera del hosting de Lovable. Esto no se detectó en la primera auditoría y causaba el ícono de imagen rota en producción (reportado por Alba Capital tras el primer despliegue). Se corrigió ocultando la sección — **no se inventaron fotos de reemplazo**. Para reactivarla: agregar las 10 fotografías reales a `src/assets/` y completar el array `slides` en ese archivo (instrucciones en el comentario del propio código).
 
