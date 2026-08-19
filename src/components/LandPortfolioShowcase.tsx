@@ -12,6 +12,8 @@ import landLivestockMorning from "@/assets/land-livestock-morning.webp";
 import landLivestockCattle from "@/assets/land-livestock-cattle.webp";
 import landTimberland from "@/assets/land-timberland.webp";
 import landCarbonCredits from "@/assets/land-carbon-credits.webp";
+import landVineyardEstate from "@/assets/land-vineyard-estate.webp";
+import landBlueberries from "@/assets/land-blueberries.webp";
 
 const images: { src: string; alt: string }[] = [
   { src: landConservation, alt: "Paisaje de conservación patagónico" },
@@ -26,6 +28,8 @@ const images: { src: string; alt: string }[] = [
   { src: landLivestockCattle, alt: "Ganado vacuno en el campo" },
   { src: landTimberland, alt: "Forestación y bosque productivo" },
   { src: landCarbonCredits, alt: "Tierras de conservación y créditos de carbono" },
+  { src: landVineyardEstate, alt: "Bodega y viñedo en Mendoza" },
+  { src: landBlueberries, alt: "Cultivo de arándanos" },
 ];
 
 /**
