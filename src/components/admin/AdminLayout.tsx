@@ -1,6 +1,6 @@
 import { ReactNode, useEffect } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { LayoutDashboard, LogOut, ExternalLink } from "lucide-react";
+import { LayoutDashboard, TrendingUp, LogOut, ExternalLink } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import albaLogo from "@/assets/alba-logo-black.webp";
@@ -38,6 +38,17 @@ const AdminLayout = ({ children }: { children: ReactNode }) => {
             >
               <LayoutDashboard className="h-4 w-4" />
               Integrantes
+            </NavLink>
+            <NavLink
+              to="/admin/opportunities"
+              className={({ isActive }) =>
+                `flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors ${
+                  isActive ? "bg-foreground text-background" : "text-muted-foreground hover:bg-muted"
+                }`
+              }
+            >
+              <TrendingUp className="h-4 w-4" />
+              Oportunidades
             </NavLink>
           </nav>
           <div className="hidden md:block px-3 pb-4 space-y-2">

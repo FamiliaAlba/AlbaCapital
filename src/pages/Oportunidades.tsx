@@ -3,21 +3,24 @@ import { useLocation } from "react-router-dom";
 import OpportunityCard from "@/components/OpportunityCard";
 import LeadForm from "@/components/LeadForm";
 import InvestmentDisclaimer from "@/components/InvestmentDisclaimer";
-import { opportunities } from "@/data/opportunities";
+import { useOpportunities } from "@/hooks/useOpportunities";
+import { useI18n } from "@/i18n/I18nProvider";
 
 const Oportunidades = () => {
   const location = useLocation();
+  const { locale } = useI18n();
+  const { opportunities, loading, error } = useOpportunities(locale);
 
   useEffect(() => {
     if (location.hash) {
       const el = document.getElementById(location.hash.slice(1));
       if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
     }
-  }, [location.hash]);
+  }, [location.hash, opportunities]);
 
-  const abiertas = opportunities.filter((o) => o.status === "abierto");
-  const dueDiligence = opportunities.filter((o) => o.status === "due-diligence");
-  const cerradas = opportunities.filter((o) => o.status === "cerrado");
+  const abiertas = opportunities.filter((o) => o.dealStatus === "abierto");
+  const dueDiligence = opportunities.filter((o) => o.dealStatus === "due-diligence");
+  const cerradas = opportunities.filter((o) => o.dealStatus === "cerrado");
 
   return (
     <div className="min-h-screen pt-12 md:pt-16">
@@ -41,7 +44,28 @@ const Oportunidades = () => {
       <section className="bg-background pb-12">
         <div className="container mx-auto px-6">
           <div className="mx-auto max-w-7xl space-y-14">
-            {abiertas.length > 0 && (
+            {loading && (
+              <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="aspect-[4/5] w-full animate-pulse rounded-2xl bg-muted" />
+                ))}
+              </div>
+            )}
+
+            {error && (
+              <p className="text-center text-sm text-muted-foreground">
+                No se pudieron cargar las oportunidades en este momento.
+              </p>
+            )}
+
+            {!loading && !error && opportunities.length === 0 && (
+              <p className="text-center text-sm text-muted-foreground">
+                No hay oportunidades publicadas por el momento. Dejanos tus datos abajo y te
+                avisamos apenas se abra una nueva ronda.
+              </p>
+            )}
+
+            {!loading && !error && abiertas.length > 0 && (
               <div>
                 <div className="mb-6 flex items-center justify-between">
                   <h2 className="text-2xl font-light text-architectural">Abiertas a inversión</h2>
@@ -49,7 +73,7 @@ const Oportunidades = () => {
                 </div>
                 <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
                   {abiertas.map((o) => (
-                    <div key={o.id} id={o.id}>
+                    <div key={o.id} id={o.slug}>
                       <OpportunityCard opportunity={o} />
                     </div>
                   ))}
@@ -57,12 +81,12 @@ const Oportunidades = () => {
               </div>
             )}
 
-            {dueDiligence.length > 0 && (
+            {!loading && !error && dueDiligence.length > 0 && (
               <div>
                 <h2 className="mb-6 text-2xl font-light text-architectural">En due diligence</h2>
                 <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
                   {dueDiligence.map((o) => (
-                    <div key={o.id} id={o.id}>
+                    <div key={o.id} id={o.slug}>
                       <OpportunityCard opportunity={o} />
                     </div>
                   ))}
@@ -70,12 +94,12 @@ const Oportunidades = () => {
               </div>
             )}
 
-            {cerradas.length > 0 && (
+            {!loading && !error && cerradas.length > 0 && (
               <div>
                 <h2 className="mb-6 text-2xl font-light text-architectural">Cerradas</h2>
                 <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
                   {cerradas.map((o) => (
-                    <div key={o.id} id={o.id}>
+                    <div key={o.id} id={o.slug}>
                       <OpportunityCard opportunity={o} />
                     </div>
                   ))}

@@ -7,6 +7,8 @@ import RouteFallback from "@/components/RouteFallback";
 const AdminLogin = lazy(() => import("./pages/admin/AdminLogin"));
 const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
 const AdminMemberForm = lazy(() => import("./pages/admin/AdminMemberForm"));
+const AdminOpportunitiesDashboard = lazy(() => import("./pages/admin/AdminOpportunitiesDashboard"));
+const AdminOpportunityForm = lazy(() => import("./pages/admin/AdminOpportunityForm"));
 
 /**
  * Subárbol administrativo, montado solo bajo /admin/*. Mantenerlo separado
@@ -40,6 +42,30 @@ const AdminApp = () => (
           element={
             <ProtectedRoute>
               <AdminMemberForm />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="opportunities"
+          element={
+            <ProtectedRoute>
+              <AdminOpportunitiesDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="opportunities/new"
+          element={
+            <ProtectedRoute>
+              <AdminOpportunityForm />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="opportunities/:id"
+          element={
+            <ProtectedRoute>
+              <AdminOpportunityForm />
             </ProtectedRoute>
           }
         />

@@ -58,6 +58,8 @@ Ubicadas en `supabase/migrations/`:
 3. `20260808210000_newsletter_subscribers.sql` — tabla `newsletter_subscribers` para el newsletter real, RLS solo-insert, email único.
 4. `20260808220000_team_module.sql` — **nueva**, tablas `team_members`, `team_member_translations`, `admin_users`, función `is_superadmin()`, triggers de auditoría y RLS.
 5. `20260808220100_team_photos_storage.sql` — **nueva**, bucket `team-photos` en Storage y sus políticas.
+6. `20260819010000_opportunities_module.sql` — **nueva**, tablas `opportunities` y `opportunity_translations`, RLS (reutiliza `is_superadmin()`).
+7. `20260819010100_opportunity_photos_storage.sql` — **nueva**, bucket `opportunity-photos` en Storage y sus políticas.
 
 Aplicar con la Supabase CLI:
 
@@ -68,7 +70,11 @@ supabase db push
 
 O pegar el SQL directamente en el SQL Editor del dashboard de Supabase, **en el orden numérico de los archivos** (las migraciones del equipo dependen de `auth.users`, que ya existe por defecto en todo proyecto Supabase).
 
-**Verificación post-migración:** confirmar que RLS está habilitada en las 5 tablas y que no existe ninguna policy de `SELECT` pública sobre `leads`, `newsletter_subscribers` ni `admin_users` (solo `service_role` o el propio usuario, según corresponda, debe poder leerlas). Para `team_members`/`team_member_translations`, confirmar que la policy pública solo permite leer registros con `status = 'published'`.
+**Verificación post-migración:** confirmar que RLS está habilitada en las 7 tablas y que no existe ninguna policy de `SELECT` pública sobre `leads`, `newsletter_subscribers` ni `admin_users` (solo `service_role` o el propio usuario, según corresponda, debe poder leerlas). Para `team_members`/`team_member_translations` y `opportunities`/`opportunity_translations`, confirmar que la policy pública solo permite leer registros con `status = 'published'`.
+
+### 6.1 Módulo "Oportunidades" — gestión de activos/proyectos de inversión
+
+Igual estándar que el módulo de equipo: CRUD completo en `/admin/opportunities` (crear, editar, publicar/despublicar, reordenar, archivar, eliminar), traducciones ES/EN/PT, foto optimizada a WebP en Supabase Storage (bucket `opportunity-photos`, lectura pública / escritura solo superadmin), RLS en ambas tablas nuevas. La página pública `/oportunidades` y el `OpportunityCard` ahora leen de Supabase (`useOpportunities` hook) en vez del archivo estático `src/data/opportunities.ts` (eliminado). Sin oportunidades publicadas, la página muestra un mensaje neutral en vez de datos ficticios.
 
 ## 7. Compilación
 

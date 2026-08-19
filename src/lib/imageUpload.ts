@@ -40,3 +40,8 @@ export function buildTeamPhotoPath(slug: string): string {
   const random = crypto.randomUUID();
   return `${slug}/${random}.webp`;
 }
+
+export function buildOpportunityPhotoPath(slug: string): string {
+  const random = crypto.randomUUID();
+  return `${slug}/${random}.webp`;
+}

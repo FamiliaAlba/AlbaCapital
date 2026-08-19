@@ -196,6 +196,116 @@ export type Database = {
           },
         ]
       }
+      opportunities: {
+        Row: {
+          archived_at: string | null
+          capital_captado: number
+          capital_objetivo: string | null
+          created_at: string
+          created_by: string | null
+          deal_status: string
+          display_order: number
+          id: string
+          is_featured: boolean
+          location: string | null
+          photo_alt: string | null
+          photo_path: string | null
+          plazo: string | null
+          slug: string
+          status: string
+          ticket_minimo: string | null
+          tir_estimada: string | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          archived_at?: string | null
+          capital_captado?: number
+          capital_objetivo?: string | null
+          created_at?: string
+          created_by?: string | null
+          deal_status?: string
+          display_order?: number
+          id?: string
+          is_featured?: boolean
+          location?: string | null
+          photo_alt?: string | null
+          photo_path?: string | null
+          plazo?: string | null
+          slug: string
+          status?: string
+          ticket_minimo?: string | null
+          tir_estimada?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          archived_at?: string | null
+          capital_captado?: number
+          capital_objetivo?: string | null
+          created_at?: string
+          created_by?: string | null
+          deal_status?: string
+          display_order?: number
+          id?: string
+          is_featured?: boolean
+          location?: string | null
+          photo_alt?: string | null
+          photo_path?: string | null
+          plazo?: string | null
+          slug?: string
+          status?: string
+          ticket_minimo?: string | null
+          tir_estimada?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
+      opportunity_translations: {
+        Row: {
+          created_at: string
+          descripcion: string | null
+          highlights: string | null
+          id: string
+          locale: string
+          opportunity_id: string
+          tipo: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          descripcion?: string | null
+          highlights?: string | null
+          id?: string
+          locale: string
+          opportunity_id: string
+          tipo?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          descripcion?: string | null
+          highlights?: string | null
+          id?: string
+          locale?: string
+          opportunity_id?: string
+          tipo?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "opportunity_translations_opportunity_id_fkey"
+            columns: ["opportunity_id"]
+            isOneToOne: false
+            referencedRelation: "opportunities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       admin_users: {
         Row: {
           created_at: string
