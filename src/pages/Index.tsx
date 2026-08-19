@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { ArrowRight, Search, FileCheck, TrendingUp } from "lucide-react";
 import Hero from "@/components/Hero";
+import LandPortfolioShowcase from "@/components/LandPortfolioShowcase";
 import Capabilities from "@/components/Capabilities";
 import Portfolio from "@/components/Portfolio";
 import MetricCard from "@/components/MetricCard";
@@ -17,6 +18,9 @@ const Index = () => {
   return (
     <div className="min-h-screen">
       <Hero />
+
+      {/* Portfolio de activos productivos (carrusel animado) */}
+      <LandPortfolioShowcase />
 
       {/* Métricas clave */}
       <section className="border-b border-border bg-background py-16 md:py-20">

@@ -34,6 +34,12 @@ export const esAR = {
       "Combinamos la estrategia empresarial con el conocimiento del mercado para ofrecer soluciones efectivas a sus clientes.",
     scroll: "DESLIZAR",
   },
+  landPortfolio: {
+    kicker: "PORTFOLIO DE ACTIVOS",
+    title: "De la tierra al rendimiento",
+    description:
+      "Estructuramos inversiones sobre activos productivos reales: campos agrícolas, ganadería, forestación y propiedades de uso recreativo en las principales regiones productivas de Argentina. Cada activo se selecciona, gestiona y reporta con el mismo estándar institucional.",
+  },
   metrics: {
     kicker: "PERFORMANCE",
     title: "Resultados que respaldan",

@@ -35,6 +35,12 @@ export const ptBR: DeepPartialDictionary = {
       "Combinamos estratégia empresarial com conhecimento de mercado para oferecer soluções eficazes aos nossos clientes.",
     scroll: "DESLIZAR",
   },
+  landPortfolio: {
+    kicker: "PORTFÓLIO DE ATIVOS",
+    title: "Da terra ao retorno",
+    description:
+      "Estruturamos investimentos sobre ativos produtivos reais: campos agrícolas, pecuária, florestamento e propriedades de uso recreativo nas principais regiões produtivas da Argentina. Cada ativo é selecionado, gerido e reportado com o mesmo padrão institucional.",
+  },
   metrics: {
     kicker: "PERFORMANCE",
     title: "Resultados que sustentam",

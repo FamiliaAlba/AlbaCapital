@@ -35,6 +35,12 @@ export const enUS: DeepPartialDictionary = {
       "We combine business strategy with market expertise to deliver effective solutions for our clients.",
     scroll: "SCROLL",
   },
+  landPortfolio: {
+    kicker: "ASSET PORTFOLIO",
+    title: "From the land to the return",
+    description:
+      "We structure investments on real productive assets: farmland, livestock, forestry and recreational properties across Argentina's leading productive regions. Every asset is selected, managed and reported to the same institutional standard.",
+  },
   metrics: {
     kicker: "PERFORMANCE",
     title: "Results that back us up",
