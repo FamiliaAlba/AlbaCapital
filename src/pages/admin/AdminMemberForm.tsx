@@ -38,7 +38,13 @@ const generalSchema = z.object({
     .refine((v) => /^https:\/\/([a-z]{2,3}\.)?linkedin\.com\//.test(v), "Debe ser una URL de linkedin.com")
     .optional()
     .or(z.literal("")),
-  professional_url: z.string().trim().url("URL inválida").optional().or(z.literal("")),
+  professional_url: z
+    .string()
+    .trim()
+    .url("URL inválida")
+    .refine((v) => v.startsWith("https://"), "Debe empezar con https://")
+    .optional()
+    .or(z.literal("")),
   photo_alt: z.string().trim().max(250).optional().or(z.literal("")),
 });
 
