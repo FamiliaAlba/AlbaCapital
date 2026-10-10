@@ -27,7 +27,7 @@ const OpportunityCard = ({ opportunity }: { opportunity: PublicOpportunity }) =>
 
   return (
     <Link
-      to={`/oportunidades#${opportunity.slug}`}
+      to={`/oportunidades/${opportunity.slug}`}
       className="group relative flex h-full flex-col rounded-2xl border border-border/60 bg-gradient-to-br from-foreground/[0.02] to-transparent p-6 transition-all duration-500 hover:border-border hover:shadow-elegant"
     >
       {opportunity.photoUrl && (

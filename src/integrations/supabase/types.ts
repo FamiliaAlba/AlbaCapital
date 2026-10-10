@@ -266,6 +266,7 @@ export type Database = {
         Row: {
           created_at: string
           descripcion: string | null
+          detail: Json | null
           highlights: string | null
           id: string
           locale: string
@@ -277,6 +278,7 @@ export type Database = {
         Insert: {
           created_at?: string
           descripcion?: string | null
+          detail?: Json | null
           highlights?: string | null
           id?: string
           locale: string
@@ -288,6 +290,7 @@ export type Database = {
         Update: {
           created_at?: string
           descripcion?: string | null
+          detail?: Json | null
           highlights?: string | null
           id?: string
           locale?: string
