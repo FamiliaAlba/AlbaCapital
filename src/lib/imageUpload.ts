@@ -45,3 +45,11 @@ export function buildOpportunityPhotoPath(slug: string): string {
   const random = crypto.randomUUID();
   return `${slug}/${random}.webp`;
 }
+
+/**
+ * Las fotos subidas desde el panel viven en Supabase Storage (ruta relativa
+ * al bucket). Las fotos incluidas en el propio sitio se guardan con una ruta
+ * que empieza con "/" (por ejemplo "/oportunidades/mi-campo.webp") y se
+ * sirven tal cual.
+ */
+export const isSitePhoto = (photoPath: string): boolean => photoPath.startsWith("/");

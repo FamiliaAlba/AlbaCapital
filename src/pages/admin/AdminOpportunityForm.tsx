@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
-import { prepareTeamPhoto, buildOpportunityPhotoPath, ImageValidationError } from "@/lib/imageUpload";
+import { prepareTeamPhoto, buildOpportunityPhotoPath, isSitePhoto, ImageValidationError } from "@/lib/imageUpload";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -107,7 +107,11 @@ const AdminOpportunityForm = () => {
       setPhotoPath(opp.photo_path);
       setMeta({ created_at: opp.created_at, updated_at: opp.updated_at });
       if (opp.photo_path) {
-        setPhotoPreview(supabase.storage.from("opportunity-photos").getPublicUrl(opp.photo_path).data.publicUrl);
+        setPhotoPreview(
+          isSitePhoto(opp.photo_path)
+            ? opp.photo_path
+            : supabase.storage.from("opportunity-photos").getPublicUrl(opp.photo_path).data.publicUrl,
+        );
       }
 
       const { data: trs } = await supabase.from("opportunity_translations").select("*").eq("opportunity_id", id);
@@ -185,7 +189,7 @@ const AdminOpportunityForm = () => {
         });
         if (uploadError) throw uploadError;
 
-        if (photoPath) {
+        if (photoPath && !isSitePhoto(photoPath)) {
           await supabase.storage.from("opportunity-photos").remove([photoPath]);
         }
         finalPhotoPath = newPath;

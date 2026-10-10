@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Locale } from "@/i18n/types";
+import { isSitePhoto } from "@/lib/imageUpload";
 
 export type DealStatus = "abierto" | "due-diligence" | "cerrado";
 
@@ -72,7 +73,9 @@ export function useOpportunities(locale: Locale) {
           // acá por si un registro quedó incompleto).
           if (!active?.title || !row.photo_path) return null;
 
-          const photoUrl = supabase.storage.from(OPPORTUNITY_PHOTOS_BUCKET).getPublicUrl(row.photo_path).data.publicUrl;
+          const photoUrl = isSitePhoto(row.photo_path)
+            ? row.photo_path
+            : supabase.storage.from(OPPORTUNITY_PHOTOS_BUCKET).getPublicUrl(row.photo_path).data.publicUrl;
 
           return {
             id: row.id,
