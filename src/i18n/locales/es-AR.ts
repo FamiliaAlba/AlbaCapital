@@ -238,8 +238,8 @@ export const esAR = {
   team: {
     eyebrow: "EQUIPO",
     title: "Nuestro equipo | Nuestros socios",
-    membersLabel: "EQUIPO",
-    partnersLabel: "SOCIOS",
+    partnersTitle: "Nuestros socios",
+    partnersSubtitle: "Empresas con las que trabajamos",
     error: "No pudimos cargar el equipo en este momento.",
   },
   opportunitiesPage: {

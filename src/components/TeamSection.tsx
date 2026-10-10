@@ -25,7 +25,6 @@ const TeamSection = () => {
 
         <div className="grid items-start gap-14 lg:grid-cols-3 lg:gap-6">
         <div className="lg:col-span-2">
-        <p className="text-minimal text-muted-foreground mb-4">{t("team.membersLabel")}</p>
         {loading && (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             {Array.from({ length: 4 }).map((_, i) => (
@@ -70,7 +69,7 @@ const TeamSection = () => {
           </div>
         )}
         </div>
-        <PartnersGrid label={t("team.partnersLabel")} />
+        <PartnersGrid title={t("team.partnersTitle")} subtitle={t("team.partnersSubtitle")} />
         </div>
       </div>
 

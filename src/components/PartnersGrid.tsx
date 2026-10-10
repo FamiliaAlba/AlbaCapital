@@ -5,9 +5,8 @@ import { partners } from "@/data/partners";
  * columna igual a la de un agente (mismo ancho y alto que su foto 3:4), para
  * que ambas queden simétricas. En gris por defecto, a color al pasar el mouse.
  */
-const PartnersGrid = ({ label }: { label: string }) => (
+const PartnersGrid = ({ title, subtitle }: { title: string; subtitle: string }) => (
   <div>
-    <p className="text-minimal text-muted-foreground mb-4">{label}</p>
     <ul className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:aspect-[3/4] lg:grid-cols-2 lg:grid-rows-4">
       {partners.map((p) => (
         <li
@@ -23,6 +22,11 @@ const PartnersGrid = ({ label }: { label: string }) => (
         </li>
       ))}
     </ul>
+    {/* Mismo estilo que el nombre y el cargo debajo de la foto de cada agente */}
+    <div className="mt-4">
+      <h3 className="text-lg font-medium text-foreground">{title}</h3>
+      <p className="text-minimal text-muted-foreground mt-1">{subtitle}</p>
+    </div>
   </div>
 );
 
