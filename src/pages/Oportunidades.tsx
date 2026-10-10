@@ -2,7 +2,6 @@ import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import OpportunityCard from "@/components/OpportunityCard";
 import LeadForm from "@/components/LeadForm";
-import InvestmentDisclaimer from "@/components/InvestmentDisclaimer";
 import { useOpportunities } from "@/hooks/useOpportunities";
 import { useI18n } from "@/i18n/I18nProvider";
 
@@ -106,9 +105,6 @@ const Oportunidades = () => {
                 </div>
               </div>
             )}
-          </div>
-          <div className="mx-auto mt-10 max-w-3xl">
-            <InvestmentDisclaimer />
           </div>
         </div>
       </section>
