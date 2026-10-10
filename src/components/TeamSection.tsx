@@ -23,8 +23,8 @@ const TeamSection = () => {
           <h2 className="text-4xl md:text-6xl font-light text-architectural">{t("team.title")}</h2>
         </div>
 
-        <div className="grid items-start gap-14 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:gap-16">
-        <div>
+        <div className="grid items-start gap-14 lg:grid-cols-3 lg:gap-6">
+        <div className="lg:col-span-2">
         <p className="text-minimal text-muted-foreground mb-4">{t("team.membersLabel")}</p>
         {loading && (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
