@@ -12,9 +12,25 @@ import carousel4 from "@/assets/carousel-4.webp";
 import carousel5 from "@/assets/carousel-5.webp";
 import carousel6 from "@/assets/carousel-6.webp";
 import carousel7 from "@/assets/carousel-7.webp";
+import carousel8 from "@/assets/carousel-8.webp";
+import carousel9 from "@/assets/carousel-9.webp";
+import carousel10 from "@/assets/carousel-10.webp";
+import carousel11 from "@/assets/carousel-11.webp";
 import albaLogo from "@/assets/alba-logo-black.webp";
 
-const carouselImages = [carousel1, carousel2, carousel3, carousel4, carousel5, carousel6, carousel7];
+const carouselImages = [
+  carousel1,
+  carousel2,
+  carousel3,
+  carousel4,
+  carousel5,
+  carousel6,
+  carousel7,
+  carousel8,
+  carousel9,
+  carousel10,
+  carousel11,
+];
 const sepiaFilter = "[filter:grayscale(100%)_sepia(30%)]";
 
 const Portfolio = () => {
