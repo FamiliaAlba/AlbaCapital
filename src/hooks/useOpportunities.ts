@@ -15,7 +15,7 @@ export interface PublicOpportunity {
   plazo: string | null;
   ticketMinimo: string | null;
   capitalObjetivo: string | null;
-  capitalCaptado: number;
+  capitalCaptado: number | null;
   isFeatured: boolean;
   title: string;
   tipo: string | null;

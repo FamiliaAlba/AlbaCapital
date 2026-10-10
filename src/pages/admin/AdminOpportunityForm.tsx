@@ -31,7 +31,10 @@ const generalSchema = z.object({
   plazo: z.string().trim().max(50).optional().or(z.literal("")),
   ticket_minimo: z.string().trim().max(50).optional().or(z.literal("")),
   capital_objetivo: z.string().trim().max(50).optional().or(z.literal("")),
-  capital_captado: z.coerce.number().min(0).max(100),
+  capital_captado: z
+    .string()
+    .trim()
+    .refine((v) => v === "" || (!Number.isNaN(Number(v)) && Number(v) >= 0 && Number(v) <= 100), "Debe ser un número entre 0 y 100, o quedar vacío."),
   photo_alt: z.string().trim().max(250).optional().or(z.literal("")),
 });
 
@@ -68,7 +71,7 @@ const AdminOpportunityForm = () => {
   const [plazo, setPlazo] = useState("");
   const [ticketMinimo, setTicketMinimo] = useState("");
   const [capitalObjetivo, setCapitalObjetivo] = useState("");
-  const [capitalCaptado, setCapitalCaptado] = useState("0");
+  const [capitalCaptado, setCapitalCaptado] = useState("");
   const [photoAlt, setPhotoAlt] = useState("");
   const [dealStatus, setDealStatus] = useState<"abierto" | "due-diligence" | "cerrado">("abierto");
   const [isFeatured, setIsFeatured] = useState(false);
@@ -96,7 +99,7 @@ const AdminOpportunityForm = () => {
       setPlazo(opp.plazo ?? "");
       setTicketMinimo(opp.ticket_minimo ?? "");
       setCapitalObjetivo(opp.capital_objetivo ?? "");
-      setCapitalCaptado(String(opp.capital_captado));
+      setCapitalCaptado(opp.capital_captado === null ? "" : String(opp.capital_captado));
       setPhotoAlt(opp.photo_alt ?? "");
       setDealStatus(opp.deal_status as typeof dealStatus);
       setIsFeatured(opp.is_featured);
@@ -201,7 +204,7 @@ const AdminOpportunityForm = () => {
       plazo: parsed.data.plazo || null,
       ticket_minimo: parsed.data.ticket_minimo || null,
       capital_objetivo: parsed.data.capital_objetivo || null,
-      capital_captado: parsed.data.capital_captado,
+      capital_captado: parsed.data.capital_captado === "" ? null : Number(parsed.data.capital_captado),
       photo_alt: parsed.data.photo_alt || translations["es-AR"].title,
       photo_path: finalPhotoPath,
       deal_status: dealStatus,
@@ -335,8 +338,8 @@ const AdminOpportunityForm = () => {
               <Input id="location" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Palermo, CABA" />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="tir">TIR estimada</Label>
-              <Input id="tir" value={tirEstimada} onChange={(e) => setTirEstimada(e.target.value)} placeholder="28% anual" />
+              <Label htmlFor="tir">Rendimiento estimado</Label>
+              <Input id="tir" value={tirEstimada} onChange={(e) => setTirEstimada(e.target.value)} placeholder="28% anual · 25–35% sobre costo" />
             </div>
             <div className="space-y-2">
               <Label htmlFor="plazo">Plazo</Label>
@@ -347,11 +350,11 @@ const AdminOpportunityForm = () => {
               <Input id="ticket" value={ticketMinimo} onChange={(e) => setTicketMinimo(e.target.value)} placeholder="USD 25.000" />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="objetivo">Capital objetivo</Label>
-              <Input id="objetivo" value={capitalObjetivo} onChange={(e) => setCapitalObjetivo(e.target.value)} placeholder="USD 4.2M" />
+              <Label htmlFor="objetivo">Monto o precio (texto libre)</Label>
+              <Input id="objetivo" value={capitalObjetivo} onChange={(e) => setCapitalObjetivo(e.target.value)} placeholder="Precio USD 2,00 M · Objetivo USD 4,2 M" />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="captado">Capital captado (%)</Label>
+              <Label htmlFor="captado">Capital captado (%) — vacío si no aplica</Label>
               <Input
                 id="captado"
                 type="number"
