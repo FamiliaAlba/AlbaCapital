@@ -3,7 +3,6 @@ import { ArrowRight, Layers, Shield, Coins, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import StepCard from "@/components/StepCard";
 import LeadForm from "@/components/LeadForm";
-import InvestmentDisclaimer from "@/components/InvestmentDisclaimer";
 
 const Invertir = () => {
   return (
@@ -117,7 +116,6 @@ const Invertir = () => {
       <section id="formulario" className="border-t border-border bg-muted/30 py-20">
         <div className="container mx-auto px-6">
           <div className="mx-auto max-w-3xl space-y-8">
-            <InvestmentDisclaimer />
             <LeadForm
               source="invertir"
               title="Hablemos de tu inversión"
