@@ -16,6 +16,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
+import { isSitePhoto } from "@/lib/imageUpload";
 import { Plus, Search, ArrowUp, ArrowDown, Pencil, Archive, Trash2, Loader2 } from "lucide-react";
 
 interface Row {
@@ -148,7 +149,7 @@ const AdminDashboard = () => {
     setPendingDelete(null);
     setBusyId(row.id);
 
-    if (row.photo_path) {
+    if (row.photo_path && !isSitePhoto(row.photo_path)) {
       await supabase.storage.from("team-photos").remove([row.photo_path]);
     }
     const { error } = await supabase.from("team_members").delete().eq("id", row.id);

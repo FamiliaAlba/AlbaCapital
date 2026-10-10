@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Locale } from "@/i18n/types";
+import { isSitePhoto } from "@/lib/imageUpload";
 
 export interface PublicTeamMember {
   id: string;
@@ -72,7 +73,9 @@ export function useTeamMembers(locale: Locale) {
           // reforzada también acá por si un registro quedó incompleto).
           if (!row.full_name || !active?.role_title || !row.photo_path) return null;
 
-          const photoUrl = supabase.storage.from(TEAM_PHOTOS_BUCKET).getPublicUrl(row.photo_path).data.publicUrl;
+          const photoUrl = isSitePhoto(row.photo_path)
+            ? row.photo_path
+            : supabase.storage.from(TEAM_PHOTOS_BUCKET).getPublicUrl(row.photo_path).data.publicUrl;
 
           return {
             id: row.id,

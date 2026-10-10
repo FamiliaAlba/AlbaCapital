@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
-import { prepareTeamPhoto, buildTeamPhotoPath, ImageValidationError } from "@/lib/imageUpload";
+import { prepareTeamPhoto, buildTeamPhotoPath, isSitePhoto, ImageValidationError } from "@/lib/imageUpload";
 import AdminLayout from "@/components/admin/AdminLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -117,7 +117,11 @@ const AdminMemberForm = () => {
       setPhotoPath(member.photo_path);
       setMeta({ created_at: member.created_at, updated_at: member.updated_at });
       if (member.photo_path) {
-        setPhotoPreview(supabase.storage.from("team-photos").getPublicUrl(member.photo_path).data.publicUrl);
+        setPhotoPreview(
+          isSitePhoto(member.photo_path)
+            ? member.photo_path
+            : supabase.storage.from("team-photos").getPublicUrl(member.photo_path).data.publicUrl,
+        );
       }
 
       const { data: trs } = await supabase.from("team_member_translations").select("*").eq("team_member_id", id);
@@ -199,7 +203,7 @@ const AdminMemberForm = () => {
         if (uploadError) throw uploadError;
 
         // Elimina la foto anterior para no dejar archivos huérfanos
-        if (photoPath) {
+        if (photoPath && !isSitePhoto(photoPath)) {
           await supabase.storage.from("team-photos").remove([photoPath]);
         }
         finalPhotoPath = newPath;
