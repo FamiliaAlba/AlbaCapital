@@ -236,7 +236,7 @@ export const enUS: DeepPartialDictionary = {
   },
   team: {
     eyebrow: "TEAM",
-    title: "Our team | Our partners",
+    title: "Our team",
     partnersTitle: "Our partners",
     partnersSubtitle: "Companies we have worked with",
     error: "We couldn't load the team right now.",

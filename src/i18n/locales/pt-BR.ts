@@ -236,7 +236,7 @@ export const ptBR: DeepPartialDictionary = {
   },
   team: {
     eyebrow: "EQUIPE",
-    title: "Nossa equipe | Nossos parceiros",
+    title: "Nossa equipe",
     partnersTitle: "Nossos parceiros",
     partnersSubtitle: "Empresas com as quais trabalhamos",
     error: "Não conseguimos carregar a equipe no momento.",
