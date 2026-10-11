@@ -3,6 +3,7 @@ import BottomNav from "./BottomNav";
 import WhatsAppFloat from "./WhatsAppFloat";
 import TopBar from "./TopBar";
 import { useI18n } from "@/i18n/I18nProvider";
+import { captureAttribution } from "@/lib/attribution";
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -10,6 +11,10 @@ interface AppLayoutProps {
 
 const AppLayout = ({ children }: AppLayoutProps) => {
   const { t, locale } = useI18n();
+
+  useEffect(() => {
+    captureAttribution();
+  }, []);
 
   // Metadatos SEO dinámicos según el idioma activo
   useEffect(() => {

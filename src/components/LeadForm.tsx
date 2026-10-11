@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/i18n/I18nProvider";
+import { readAttribution } from "@/lib/attribution";
 import { Loader2, CheckCircle2 } from "lucide-react";
 
 interface LeadFormProps {
@@ -67,6 +68,7 @@ const LeadForm = ({ oportunidadId, source = "web", title, description }: LeadFor
       mensaje: values.mensaje || null,
       oportunidad_id: oportunidadId || null,
       source: `${source}:${locale}`,
+      ...readAttribution(),
     });
 
     if (error) {

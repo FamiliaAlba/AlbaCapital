@@ -1,0 +1,28 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": [
+      "ES2022",
+      "DOM"
+    ],
+    "strict": false,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "types": [
+      "node"
+    ],
+    "esModuleInterop": true
+  },
+  "include": [
+    "api",
+    "server",
+    "src/lib/social",
+    "tests"
+  ],
+  "exclude": [
+    "src/lib/social/api.ts",
+    "src/lib/social/composer.ts"
+  ]
+}

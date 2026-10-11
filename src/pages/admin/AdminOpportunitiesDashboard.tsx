@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { isSitePhoto } from "@/lib/imageUpload";
+import SocialPostButton from "@/components/social/SocialPostButton";
 import { Plus, Search, ArrowUp, ArrowDown, Pencil, Archive, Trash2, Loader2 } from "lucide-react";
 
 interface Row {
@@ -283,6 +284,7 @@ const AdminOpportunitiesDashboard = () => {
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-end gap-1">
+                      <SocialPostButton opportunityId={row.id} className="h-8 px-2" />
                       <Button variant="ghost" size="sm" asChild>
                         <Link to={`/admin/opportunities/${row.id}`} aria-label="Editar">
                           <Pencil className="h-4 w-4" />

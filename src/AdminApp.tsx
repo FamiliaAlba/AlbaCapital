@@ -8,6 +8,7 @@ const AdminLogin = lazy(() => import("./pages/admin/AdminLogin"));
 const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
 const AdminMemberForm = lazy(() => import("./pages/admin/AdminMemberForm"));
 const AdminOpportunitiesDashboard = lazy(() => import("./pages/admin/AdminOpportunitiesDashboard"));
+const AdminSocial = lazy(() => import("./pages/admin/AdminSocial"));
 const AdminOpportunityForm = lazy(() => import("./pages/admin/AdminOpportunityForm"));
 
 /**
@@ -66,6 +67,14 @@ const AdminApp = () => (
           element={
             <ProtectedRoute>
               <AdminOpportunityForm />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="social"
+          element={
+            <ProtectedRoute>
+              <AdminSocial />
             </ProtectedRoute>
           }
         />

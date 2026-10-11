@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import LeadForm from "@/components/LeadForm";
+import SocialPostButton from "@/components/social/SocialPostButton";
 import NotFound from "@/pages/NotFound";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/i18n/I18nProvider";
@@ -115,12 +116,15 @@ const OportunidadDetalle = () => {
     <div className="min-h-screen pt-20 md:pt-24">
       <article className="container mx-auto px-6 pb-16">
         <div className="mx-auto max-w-5xl">
-          <Link
-            to="/oportunidades"
-            className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
-          >
-            <ArrowLeft className="h-4 w-4" /> Todas las oportunidades
-          </Link>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <Link
+              to="/oportunidades"
+              className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+            >
+              <ArrowLeft className="h-4 w-4" /> Todas las oportunidades
+            </Link>
+            <SocialPostButton opportunityId={opportunity.id} />
+          </div>
 
           <div className="mt-6 aspect-[16/8] w-full overflow-hidden rounded-2xl bg-muted">
             <img src={opportunity.photoUrl ?? ""} alt={opportunity.photoAlt} className="h-full w-full object-cover" />
