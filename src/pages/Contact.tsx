@@ -55,7 +55,7 @@ const Contact = () => {
                 <MapPin className="h-6 w-6" strokeWidth={1.8} />
                 <div>
                   <p className="text-minimal text-muted-foreground">OFICINAS</p>
-                  <p className="mt-2 text-xl font-light">{OFFICE_LOCATIONS.join(", ")}</p>
+                  <p className="mt-2 text-xl font-light">{OFFICE_LOCATIONS.join(" - ")}</p>
                   <p className="mt-1 text-sm text-muted-foreground">Atención con cita previa</p>
                 </div>
               </div>

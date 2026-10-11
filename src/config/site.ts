@@ -30,7 +30,7 @@ export const CONTACT = {
  * provisoriamente a un único texto; Alba Capital debe confirmar cuál es
  * la información correcta.
  */
-export const OFFICE_LOCATIONS = ["Buenos Aires"];
+export const OFFICE_LOCATIONS = ["San Luis", "Córdoba", "Buenos Aires"];
 
 /**
  * Redes sociales. Solo se muestra el ícono si la URL está confirmada.
