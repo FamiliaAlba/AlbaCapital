@@ -33,7 +33,7 @@ const Contact = () => {
                 <div>
                   <h4 className="text-minimal text-muted-foreground mb-1">ESTUDIO</h4>
                   <address className="text-base not-italic">
-                    {OFFICE_LOCATIONS.join(" - ")}
+                    {OFFICE_LOCATIONS.join(" - ").toUpperCase()}
                   </address>
                 </div>
               </div>
