@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/i18n/I18nProvider";
 import { readAttribution } from "@/lib/attribution";
+import { buildWhatsAppUrl } from "@/config/site";
 import { Loader2, CheckCircle2 } from "lucide-react";
 
 interface LeadFormProps {
@@ -19,9 +20,24 @@ interface LeadFormProps {
   description?: string;
 }
 
+/** Mensaje (siempre en español: lo lee el equipo) con los datos del contacto, para el WhatsApp de Alba Capital. */
+const buildLeadMessage = (v: { nombre: string; email: string; telefono?: string; monto_interes?: string; mensaje?: string }, project?: string) =>
+  [
+    "Hola, quiero recibir información de inversión en Alba Capital.",
+    project ? `Proyecto: ${project}` : null,
+    `Nombre: ${v.nombre}`,
+    `Email: ${v.email}`,
+    v.telefono ? `Teléfono: ${v.telefono}` : null,
+    v.monto_interes ? `Monto de interés: ${v.monto_interes}` : null,
+    v.mensaje ? `Mensaje: ${v.mensaje}` : null,
+  ]
+    .filter(Boolean)
+    .join("\n");
+
 const LeadForm = ({ oportunidadId, source = "web", title, description }: LeadFormProps) => {
   const { t, locale } = useI18n();
   const [submitted, setSubmitted] = useState(false);
+  const [waUrl, setWaUrl] = useState<string | null>(null);
   const [consent, setConsent] = useState(false);
   const [consentError, setConsentError] = useState(false);
   const [honeypot, setHoneypot] = useState("");
@@ -71,17 +87,14 @@ const LeadForm = ({ oportunidadId, source = "web", title, description }: LeadFor
       ...readAttribution(),
     });
 
-    if (error) {
-      toast({
-        title: t("form.errorTitle"),
-        description: t("form.errorDesc"),
-        variant: "destructive",
-      });
-      return;
-    }
+    // El WhatsApp de Alba Capital es el canal principal: si el respaldo en la base falla igual se envía la consulta.
+    if (error) console.warn("[LeadForm] no se pudo guardar el respaldo del contacto");
 
+    const url = buildWhatsAppUrl(buildLeadMessage(values, oportunidadId));
+    setWaUrl(url);
     setSubmitted(true);
     reset();
+    window.location.assign(url);
     toast({ title: t("form.successToastTitle"), description: t("form.successToastDesc") });
   };
 
@@ -91,6 +104,13 @@ const LeadForm = ({ oportunidadId, source = "web", title, description }: LeadFor
         <CheckCircle2 className="mx-auto h-10 w-10 text-foreground" />
         <h3 className="mt-4 text-2xl font-light text-architectural">{t("form.sentTitle")}</h3>
         <p className="mt-2 text-muted-foreground">{t("form.sentDesc")}</p>
+        {waUrl && (
+          <Button asChild className="mt-6 mr-3">
+            <a href={waUrl} target="_blank" rel="noopener noreferrer">
+              {t("form.openWhatsapp")}
+            </a>
+          </Button>
+        )}
         <Button variant="outline" className="mt-6" onClick={() => setSubmitted(false)}>
           {t("form.sendAnother")}
         </Button>

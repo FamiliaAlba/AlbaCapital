@@ -217,6 +217,7 @@ export const esAR = {
     successToastTitle: "¡Listo!",
     successToastDesc: "Te contactamos pronto.",
     sentTitle: "Mensaje enviado",
+    openWhatsapp: "Abrir WhatsApp",
     sentDesc: "Recibimos tu interés. Un asesor de Alba Capital se va a comunicar con vos.",
     sendAnother: "Enviar otro mensaje",
   },

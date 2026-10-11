@@ -216,6 +216,7 @@ export const enUS: DeepPartialDictionary = {
     successToastTitle: "Done!",
     successToastDesc: "We'll be in touch soon.",
     sentTitle: "Message sent",
+    openWhatsapp: "Open WhatsApp",
     sentDesc: "We received your request. An Alba Capital advisor will contact you.",
     sendAnother: "Send another message",
   },

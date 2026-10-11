@@ -216,6 +216,7 @@ export const ptBR: DeepPartialDictionary = {
     successToastTitle: "Pronto!",
     successToastDesc: "Entraremos em contato em breve.",
     sentTitle: "Mensagem enviada",
+    openWhatsapp: "Abrir WhatsApp",
     sentDesc: "Recebemos seu interesse. Um consultor da Alba Capital entrará em contato.",
     sendAnother: "Enviar outra mensagem",
   },
