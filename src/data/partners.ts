@@ -11,6 +11,8 @@ import pop from "@/assets/socios/pop-argentina.webp";
 import gimenezRiili from "@/assets/socios/gimenez-riili.webp";
 import poloRanch from "@/assets/socios/polo-ranch.webp";
 import agrositio from "@/assets/socios/agrositio.webp";
+import bancoProvincia from "@/assets/socios/banco-provincia.webp";
+import vorgal from "@/assets/socios/vorgal.webp";
 
 /** Empresas con las que trabajó Alba Capital. Los logos ya están normalizados al mismo formato (600×400, fondo blanco). */
 export const partners: { name: string; logo: string }[] = [
@@ -27,4 +29,6 @@ export const partners: { name: string; logo: string }[] = [
   { name: "Gimenez Riili Desarrollos Inmobiliarios", logo: gimenezRiili },
   { name: "Polo Ranch Country", logo: poloRanch },
   { name: "Agrositio", logo: agrositio },
+  { name: "Banco Provincia", logo: bancoProvincia },
+  { name: "Vorgal Properties", logo: vorgal },
 ];
