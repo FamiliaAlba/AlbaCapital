@@ -109,6 +109,32 @@
   }
 }
 
+/* Sección Tokenizate: paleta propia (azul marino, grises) y fondo claro en ambos temas del sitio. */
+.tk-scope {
+  --background: 0 0% 100%;
+  --foreground: 220 25% 11%;
+  --card: 0 0% 100%;
+  --card-foreground: 220 25% 11%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 220 25% 11%;
+  --primary: 214 70% 16%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 214 24% 96%;
+  --secondary-foreground: 214 70% 16%;
+  --muted: 214 24% 96%;
+  --muted-foreground: 215 16% 32%;
+  --accent: 214 24% 94%;
+  --accent-foreground: 214 70% 16%;
+  --destructive: 0 70% 40%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 214 18% 84%;
+  --input: 214 16% 70%;
+  --ring: 214 70% 30%;
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  color-scheme: light;
+}
+
 @layer base {
   * {
     @apply border-border;

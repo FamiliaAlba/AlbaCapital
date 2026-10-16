@@ -22,6 +22,7 @@ export const esAR = {
     services: "Servicios",
     about: "Nosotros",
     blog: "Blog",
+    tokenize: "Tokenizate",
     contact: "Contacto",
     team: "Equipo",
     homeAria: "Alba Capital - Inicio",

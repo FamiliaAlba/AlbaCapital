@@ -33,6 +33,12 @@ const TopBar = () => {
           >
             {t("nav.team")}
           </a>
+          <Link
+            to="/tokenizate"
+            className="hidden sm:inline text-minimal text-muted-foreground hover:text-foreground transition-colors duration-300"
+          >
+            {t("nav.tokenize")}
+          </Link>
           <LanguageSelector />
           <ThemeToggle />
         </div>

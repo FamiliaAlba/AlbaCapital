@@ -1,1 +1,5 @@
 project_id = "ffamwpnrinuxvglcglaq"
+[functions.tokenizate]
+# Las acciones públicas no llevan sesión; la función autoriza cada acción internamente
+# (clave de expediente para propietarios, JWT + rol superadmin para el equipo).
+verify_jwt = false

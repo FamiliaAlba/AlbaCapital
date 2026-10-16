@@ -10,6 +10,9 @@ import RouteFallback from "@/components/RouteFallback";
 const Index = lazy(() => import("./pages/Index"));
 const Oportunidades = lazy(() => import("./pages/Oportunidades"));
 const OportunidadDetalle = lazy(() => import("./pages/OportunidadDetalle"));
+const Tokenizate = lazy(() => import("./pages/Tokenizate"));
+const TokenizatePostular = lazy(() => import("./pages/TokenizatePostular"));
+const TokenizateLegal = lazy(() => import("./pages/TokenizateLegal"));
 const Invertir = lazy(() => import("./pages/Invertir"));
 const Work = lazy(() => import("./pages/Work"));
 const Services = lazy(() => import("./pages/Services"));
@@ -47,6 +50,10 @@ const App = () => (
                       <Route path="/oportunidades" element={<Oportunidades />} />
                       <Route path="/oportunidades/:slug" element={<OportunidadDetalle />} />
                       <Route path="/invertir" element={<Invertir />} />
+                      <Route path="/tokenizate" element={<Tokenizate />} />
+                      <Route path="/tokenizate/postular" element={<TokenizatePostular />} />
+                      <Route path="/tokenizate/privacidad" element={<TokenizateLegal kind="privacidad" />} />
+                      <Route path="/tokenizate/bases-y-condiciones" element={<TokenizateLegal kind="bases" />} />
                       <Route path="/work" element={<Work />} />
                       <Route path="/services" element={<Services />} />
                       <Route path="/about" element={<About />} />

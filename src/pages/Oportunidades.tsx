@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import OpportunityCard from "@/components/OpportunityCard";
 import LeadForm from "@/components/LeadForm";
 import { useOpportunities } from "@/hooks/useOpportunities";
@@ -105,6 +105,20 @@ const Oportunidades = () => {
                 </div>
               </div>
             )}
+          </div>
+        </div>
+      </section>
+
+      <section className="border-t border-border py-12">
+        <div className="container mx-auto px-6">
+          <div className="mx-auto flex max-w-7xl flex-col gap-4 rounded-2xl border border-border/60 p-6 md:flex-row md:items-center md:justify-between md:p-8">
+            <div>
+              <p className="text-minimal text-muted-foreground">TOKENIZATE</p>
+              <p className="mt-2 text-lg font-light">Conocé la inversión tokenizada o postulá tu activo para que Alba Capital lo evalúe.</p>
+            </div>
+            <Link to="/tokenizate" className="shrink-0 rounded-full border border-foreground px-6 py-3 text-sm font-medium transition-colors hover:bg-foreground hover:text-background">
+              Ir a Tokenizate
+            </Link>
           </div>
         </div>
       </section>

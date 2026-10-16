@@ -23,6 +23,7 @@ export const enUS: DeepPartialDictionary = {
     services: "Services",
     about: "About",
     blog: "Blog",
+    tokenize: "Tokenizate",
     contact: "Contact",
     team: "Team",
     homeAria: "Alba Capital - Home",

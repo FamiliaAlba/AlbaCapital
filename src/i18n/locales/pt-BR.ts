@@ -23,6 +23,7 @@ export const ptBR: DeepPartialDictionary = {
     services: "Serviços",
     about: "Sobre nós",
     blog: "Blog",
+    tokenize: "Tokenizate",
     contact: "Contato",
     team: "Equipe",
     homeAria: "Alba Capital - Início",

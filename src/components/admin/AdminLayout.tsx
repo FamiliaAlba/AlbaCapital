@@ -1,6 +1,6 @@
 import { ReactNode, useEffect } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { LayoutDashboard, TrendingUp, LogOut, ExternalLink, Megaphone } from "lucide-react";
+import { LayoutDashboard, TrendingUp, LogOut, ExternalLink, Megaphone, Coins } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import albaLogo from "@/assets/alba-logo-black.webp";
@@ -60,6 +60,17 @@ const AdminLayout = ({ children }: { children: ReactNode }) => {
             >
               <Megaphone className="h-4 w-4" />
               Marketing · Redes
+            </NavLink>
+            <NavLink
+              to="/admin/tokenizate"
+              className={({ isActive }) =>
+                `flex items-center gap-2 rounded-lg px-3 py-2 text-sm transition-colors ${
+                  isActive ? "bg-foreground text-background" : "text-muted-foreground hover:bg-muted"
+                }`
+              }
+            >
+              <Coins className="h-4 w-4" />
+              Tokenizate
             </NavLink>
           </nav>
           <div className="hidden md:block px-3 pb-4 space-y-2">

@@ -11,6 +11,14 @@ const esc = (s: string) => s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&
  * las personas reciben la SPA normal.
  */
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  if (req.query.page === "tokenizate") {
+    const site = env.siteUrl();
+    const t = "Tokenizate | Alba Capital";
+    const d = "Conocé cómo funciona la inversión tokenizada o postulá tu activo para que Alba Capital evalúe sus posibilidades de financiación.";
+    res.setHeader("Content-Type", "text/html; charset=utf-8");
+    res.setHeader("Cache-Control", "public, s-maxage=3600");
+    return res.status(200).send(`<!doctype html><html lang="es-AR"><head><meta charset="utf-8"><title>${esc(t)}</title><meta name="description" content="${esc(d)}"><link rel="canonical" href="${site}/tokenizate"><meta property="og:type" content="website"><meta property="og:site_name" content="Alba Capital"><meta property="og:title" content="${esc(t)}"><meta property="og:description" content="${esc(d)}"><meta property="og:url" content="${site}/tokenizate"><meta property="og:image" content="${site}/og-image.jpg"><meta name="twitter:card" content="summary_large_image"></head><body><h1>${esc(t)}</h1><p>${esc(d)}</p></body></html>`);
+  }
   const slug = String(req.query.slug ?? "").toLowerCase();
   const site = env.siteUrl();
   let title = "Alba Capital — Convertimos activos en rendimiento";

@@ -5,6 +5,17 @@
   "framework": "vite",
   "rewrites": [
     {
+      "source": "/tokenizate",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": "(?i)(facebookexternalhit|facebot|linkedinbot|twitterbot|whatsapp|telegrambot|slackbot|discordbot|pinterest|embedly|skypeuripreview)"
+        }
+      ],
+      "destination": "/api/og?page=tokenizate"
+    },
+    {
       "source": "/oportunidades/:slug",
       "has": [
         {

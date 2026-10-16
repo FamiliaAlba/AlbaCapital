@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { Home, TrendingUp, Wallet, User } from "lucide-react";
+import { Home, TrendingUp, Wallet, User, Layers } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/i18n/I18nProvider";
 
@@ -7,6 +7,7 @@ const items = [
   { to: "/", key: "nav.home", icon: Home },
   { to: "/oportunidades", key: "nav.opportunities", icon: TrendingUp },
   { to: "/invertir", key: "nav.invest", icon: Wallet },
+  { to: "/tokenizate", key: "nav.tokenize", icon: Layers },
   { to: "/contact", key: "nav.contact", icon: User },
 ];
 
@@ -24,11 +25,11 @@ const BottomNav = () => {
         {items.map(({ to, key, icon: Icon }) => {
           const active = to === "/" ? location.pathname === "/" : location.pathname.startsWith(to);
           return (
-            <li key={to} className="flex-1">
+            <li key={to} className="min-w-0 flex-1">
               <NavLink
                 to={to}
                 className={cn(
-                  "flex flex-col items-center justify-center gap-1 py-2.5 px-2 text-[10px] font-medium uppercase tracking-wider transition-colors",
+                  "flex flex-col items-center justify-center gap-1 py-2.5 px-0 text-[8px] font-medium uppercase tracking-normal transition-colors sm:px-2 sm:text-[10px] sm:tracking-wider",
                   active ? "text-foreground" : "text-muted-foreground hover:text-foreground",
                 )}
               >
@@ -40,7 +41,7 @@ const BottomNav = () => {
                 >
                   <Icon className="h-[18px] w-[18px]" strokeWidth={active ? 2.2 : 1.6} />
                 </span>
-                <span>{t(key)}</span>
+                <span className="max-w-full truncate">{t(key)}</span>
               </NavLink>
             </li>
           );
