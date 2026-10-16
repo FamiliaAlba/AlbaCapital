@@ -272,8 +272,9 @@ const ApplicationFlow = ({ consult }: { consult: boolean }) => {
           {result && (
             <div role="status" className="mt-4 space-y-2 text-sm text-foreground">
               <p>La postulación quedó guardada correctamente. Alba Capital va a hacer una revisión preliminar.</p>
-              {result.email === "not_configured" && (
-                <p className="rounded-lg border border-amber-600/40 bg-amber-50 p-3 text-amber-950"><AlertTriangle className="mr-1 inline h-4 w-4" aria-hidden="true" /> Tu postulación fue recibida, pero <strong>no pudimos enviarte un correo de confirmación</strong> (el servicio de correo todavía no está habilitado). Guardá tu número de expediente y tu clave: con ellos podés consultar el estado cuando quieras.</p>
+              {result.email === "sent" && <p className="rounded-lg border border-green-700/30 bg-green-50 p-3 text-green-950">Te enviamos un correo de confirmación a {app.owner_email}. Si no lo ves, revisá la carpeta de spam.</p>}
+              {result.email !== "sent" && (
+                <p className="rounded-lg border border-amber-600/40 bg-amber-50 p-3 text-amber-950"><AlertTriangle className="mr-1 inline h-4 w-4" aria-hidden="true" /> Tu postulación fue recibida, pero <strong>no pudimos enviarte un correo de confirmación</strong> ({result.email === "failed" ? "el envío falló" : "el servicio de correo todavía no está habilitado"}). Guardá tu número de expediente y tu clave: con ellos podés consultar el estado cuando quieras.</p>
               )}
               <p className="text-muted-foreground">Recordá: presentar el proyecto no garantiza aprobación, financiación ni emisión de tokens.</p>
             </div>

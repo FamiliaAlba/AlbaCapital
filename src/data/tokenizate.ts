@@ -1,5 +1,5 @@
 /** Versión vigente de la Política de Privacidad y de las Bases y Condiciones. Debe coincidir con LEGAL_VERSION de la Edge Function. */
-export const TK_LEGAL_VERSION = "2026-10-16";
+export const TK_LEGAL_VERSION = "2026-10-16.2";
 
 export const COUNTRIES = ["Argentina", "Uruguay", "Chile", "Paraguay", "Brasil", "Bolivia", "México", "España", "Estados Unidos", "Otro país"];
 

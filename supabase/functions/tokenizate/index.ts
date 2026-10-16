@@ -4,9 +4,10 @@
 //  - propietario: número de expediente + clave de acceso (solo se guarda su hash SHA-256);
 //  - equipo: JWT de Supabase + rol superadmin en admin_users.
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
 
 const BUCKET = "tokenizate-docs";
-const LEGAL_VERSION = "2026-10-16"; // versión vigente de Política de Privacidad y Bases y Condiciones
+const LEGAL_VERSION = "2026-10-16.2"; // versión vigente de Política de Privacidad y Bases y Condiciones
 const ORIGINS = [
   "https://alba-capital.vercel.app",
   "https://albacapital.com",
@@ -20,6 +21,26 @@ const DOC_CATEGORIES = ["titularidad", "tecnica", "valuacion", "ingresos_costos"
 const RELATIONS = ["propietario", "representante", "empresa_titular"];
 const STATES = ["operativo", "ampliacion", "desarrollo", "otro"];
 const MIME_EXT: Record<string, string[]> = { "application/pdf": ["pdf"], "image/jpeg": ["jpg", "jpeg"], "image/png": ["png"] };
+
+const SITE = (Deno.env.get("SITE_URL") ?? "https://alba-capital.vercel.app").replace(/\/+$/, "");
+
+/** Envío por SMTP (Gmail). Nunca lanza: devuelve el resultado para registrarlo y mostrarlo con honestidad. */
+async function sendMail(to: string, subject: string, text: string): Promise<"sent" | "failed" | "not_configured"> {
+  const user = Deno.env.get("SMTP_USER");
+  const pass = Deno.env.get("SMTP_PASS");
+  if (!user || !pass) return "not_configured";
+  const client = new SMTPClient({ connection: { hostname: "smtp.gmail.com", port: 465, tls: true, auth: { username: user, password: pass } } });
+  try {
+    await Promise.race([client.send({ from: `Alba Capital <${user}>`, to, subject, content: text }), new Promise((_, rej) => setTimeout(() => rej(new Error("timeout")), 9000))]);
+    return "sent";
+  } catch (e) {
+    console.error("mail error", e instanceof Error ? e.message.slice(0, 60) : "unknown"); // sin datos personales ni credenciales
+    return "failed";
+  } finally {
+    try { await client.close(); } catch { /* ya cerrado */ }
+  }
+}
+const teamEmail = () => Deno.env.get("TEAM_EMAIL") ?? Deno.env.get("SMTP_USER") ?? "";
 
 const db = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } });
 
@@ -145,6 +166,8 @@ async function handle(action: string, body: Body, req: Request): Promise<unknown
       }).select("id").single();
       if (error) throw new HttpError(400, "No pudimos registrar tu solicitud. Revisá los datos.");
       await ev({ interested: data.id, actor: "system", action: "created" });
+      // Aviso interno sin datos personales: solo enlaza al panel autenticado.
+      if (teamEmail()) await sendMail(teamEmail(), "Tokenizate: nuevo interesado", `Hay un nuevo interesado en inversiones.\n\nRevisalo en el panel (requiere iniciar sesión):\n${SITE}/admin/tokenizate`);
       return { ok: true };
     }
 
@@ -309,8 +332,15 @@ async function handle(action: string, body: Body, req: Request): Promise<unknown
       const { error } = await db.from("tk_applications").update({ status: "recibido", stage: 4, submitted_at: now.toISOString(), declarations, retention_until: retention.toISOString(), email_status: "not_configured" }).eq("id", a.id).eq("status", "borrador");
       if (error) throw new HttpError(500, "No se pudo guardar el envío. Tus datos siguen como borrador; reintentá.");
       await ev({ app: a.id, actor: "owner", action: "submitted" });
-      // No hay proveedor de correo configurado: se informa honestamente que la confirmación por mail no se envió.
-      return { ok: true, expediente: a.expediente, status: "recibido", email: "not_configured" };
+      // La postulación ya está guardada: el resultado del correo se informa por separado y nunca la deshace.
+      const mail = await sendMail(
+        app.owner_email,
+        `Recibimos tu postulación ${a.expediente} | Tokenizate`,
+        `Hola ${app.owner_name},\n\nRecibimos tu postulación en Tokenizate | Alba Capital.\nNúmero de expediente: ${a.expediente}\n\nPara consultar el estado ingresá a ${SITE}/tokenizate/postular?modo=consultar con tu número de expediente y la clave de acceso que se te mostró al crearlo (por seguridad no la incluimos en este correo).\n\nRecordá que presentar el proyecto no garantiza aprobación, financiación ni emisión de tokens, y que Alba Capital no está obligada a estructurarlo ni ofrecerlo. Todo se analiza y aprueba primero; si corresponde y hay acuerdo definitivo, se formaliza con un contrato.\n\nAlba Capital`,
+      );
+      await db.from("tk_applications").update({ email_status: mail === "sent" ? "sent" : mail === "failed" ? "failed" : "not_configured" }).eq("id", a.id);
+      if (teamEmail()) await sendMail(teamEmail(), `Tokenizate: nueva postulación ${a.expediente}`, `Se recibió una nueva postulación.\n\nRevisala en el panel (requiere iniciar sesión):\n${SITE}/admin/tokenizate/${a.id}\n\nNo se adjuntan documentos.`);
+      return { ok: true, expediente: a.expediente, status: "recibido", email: mail };
     }
 
     // ------------------------------------------------------------------ equipo

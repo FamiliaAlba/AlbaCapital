@@ -178,6 +178,7 @@ export const POLITICA_PRIVACIDAD: LegalDoc = {
         "No vendemos tus datos ni los cedemos a terceros sin tu consentimiento o una obligación legal (art. 11).",
         "Usamos proveedores de infraestructura para alojar el sitio, la base de datos y el almacenamiento privado de documentos. Pueden operar servidores fuera de la Argentina; adoptamos medidas para que ese tratamiento sea seguro y proporcionado (art. 12).",
         "El equipo de Alba Capital accede según su rol. Las notificaciones internas enlazan al expediente autenticado y no adjuntan documentos.",
+        "Para enviarte confirmaciones y avisos usamos el servicio de correo de Google (Gmail), desde una casilla de Alba Capital. Los correos no incluyen tu clave de acceso ni documentos.",
         "No enviamos tu documentación a servicios de inteligencia artificial externos. Si algún día lo hiciéramos, te informaríamos y pediríamos una decisión específica.",
       ],
     },
