@@ -46,3 +46,9 @@ Módulo "Microtokenización de lotes productivos": presentación en `/tokenizate
 **Para pasar a producción (requiere autorización):** (1) desplegar `supabase/functions/tokenizate/index.ts` como función `tokenizate`; (2) fusionar la rama a `main` y dejar `PYME_ENABLED = true` en `backend.ts` (función `tokenizate`, versión `2026-10-26`); (3) revisión del asesor legal de las nuevas cláusulas; (4) eliminar `tokenizate-preview`.
 
 **Sin implementar a propósito:** billeteras, pagos, contratos inteligentes, emisión de tokens, negociación secundaria, publicación de proyectos y cualquier botón de compra. Una evaluación "viable" no publica nada ni habilita inversiones.
+
+### Campos e industrias (misma rama de vista previa)
+
+Tercera modalidad para grandes activos de renta (campos arrendados, plantas, logística/agroindustria). Sección en `/tokenizate#campos-industrias`, postulación en `/tokenizate/postular?modalidad=campos-industrias` (6 etapas: datos iniciales, activo y titularidad, renta y contratos, cargas y estructura, documentación, revisión), documentación con categorías propias (tasación, contratos de arrendamiento, historial de renta, planos y catastro, impuestos y cargas), y gestión en el panel con su ficha de evaluación (titularidad, valuación, operador, renta y su variabilidad, cargas, costos de estructura, encuadre regulatorio, riesgos, escenarios).
+
+Datos: `tk_applications.modality = 'campos_industrias'` y campos específicos en `tk_applications.grande` (jsonb con lista cerrada de claves). Migración aditiva `20261027000000_tokenizate_campos_industrias.sql` (ya aplicada). Mismos estados, retención, correos y controles de seguridad que el resto. El caso Landtoken figura solo como **caso externo citado, sin cifras ni condiciones**, con fuentes atribuidas y sin verificación independiente.

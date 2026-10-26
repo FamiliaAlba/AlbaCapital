@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { tkApi } from "@/lib/tokenizate/api";
-import { ALL_DOC_CATEGORIES, CATEGORIES, EVAL_FIELDS, PROJECT_STATES, PYME_EVAL_FIELDS, PYME_INTEREST_MODES, PYME_PRODUCTION_MODES, RELATIONS, STATUS_LABEL, statusLabel } from "@/data/tokenizate";
+import { ALL_DOC_CATEGORIES, CATEGORIES, EVAL_FIELDS, GRANDE_ASSET_KINDS, GRANDE_EVAL_FIELDS, GRANDE_INTEREST_MODES, GRANDE_OPERATION_MODES, MODALITY_LABEL, PROJECT_STATES, PYME_EVAL_FIELDS, PYME_INTEREST_MODES, PYME_PRODUCTION_MODES, RELATIONS, STATUS_LABEL, statusLabel } from "@/data/tokenizate";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 const select = "h-10 rounded-md border border-input bg-background px-3 text-sm";
@@ -58,7 +58,8 @@ const AdminTokenizateApp = () => {
   if (!d) return <AdminLayout><Loader2 className="h-6 w-6 animate-spin" /></AdminLayout>;
   const a = d.application;
   const isPyme = a.modality === "produccion_pyme";
-  const py = (a.pyme ?? {}) as Record<string, any>;
+  const isBig = a.modality === "campos_industrias";
+  const py = ((isBig ? a.grande : a.pyme) ?? {}) as Record<string, any>;
   const stateOf = (k: string) => ({ comprobado: "comprobado", estimado: "estimación", no_tengo: "todavía no lo tiene", orientacion: "necesita orientación" } as Record<string, string>)[py._state?.[k] ?? ""] ?? "";
   const pyRow = (k: string, l: string) => row(l, py[k] ? <span className="whitespace-pre-wrap">{py[k]}{stateOf(k) ? <em className="ml-2 text-xs text-muted-foreground">({stateOf(k)})</em> : null}</span> : null);
   const row = (k: string, v: any) => <div className="grid gap-1 py-2 sm:grid-cols-[12rem_1fr]"><dt className="text-sm text-muted-foreground">{k}</dt><dd className="text-sm">{v ?? "—"}</dd></div>;
@@ -69,7 +70,7 @@ const AdminTokenizateApp = () => {
       <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-light text-architectural">{a.project_name ?? "Sin nombre"}</h1>
-          <p className="font-mono text-sm text-muted-foreground">{a.expediente} · {isPyme ? "Producción PyME · " : ""} confirmación por correo: {a.email_status === "not_configured" ? "no configurada" : a.email_status}</p>
+          <p className="font-mono text-sm text-muted-foreground">{a.expediente} · {a.modality !== "activo" ? `${MODALITY_LABEL[a.modality]} · ` : ""} confirmación por correo: {a.email_status === "not_configured" ? "no configurada" : a.email_status}</p>
         </div>
         <div className="flex flex-wrap gap-3">
           <label className="text-xs">Estado<br /><select className={select} value={a.status} disabled={a.status === "borrador"} onChange={(e) => run(() => tkApi("admin_update_app", { id, status: e.target.value }, { admin: true }), "Estado actualizado")}>
@@ -95,6 +96,21 @@ const AdminTokenizateApp = () => {
           </dl>
           {Object.keys(a.data ?? {}).length > 0 && <div className="mt-3 text-xs text-muted-foreground"><p className="font-medium text-foreground">Documentación que el postulante indicó no tener todavía:</p>{Object.entries(a.data).filter(([k, v]) => k.startsWith("why_") && v).map(([k, v]) => <p key={k}>• {String(v)}</p>)}</div>}
         </section>
+
+        {isBig && (
+          <section className="rounded-xl border border-border bg-background p-5 xl:col-span-2">
+            <h2 className="mb-2 text-lg font-light">Campos e industrias · datos informados</h2>
+            <p className="mb-2 text-xs text-muted-foreground">Lo que figura entre paréntesis indica si el postulante lo marcó como dato comprobado, estimación o faltante.</p>
+            <dl className="grid divide-y divide-border md:grid-cols-2 md:gap-x-8 md:divide-y-0">
+              {row("Tipo de activo", GRANDE_ASSET_KINDS[py.asset_kind])}{pyRow("contact_name", "Contacto")}{pyRow("contact_role", "Función")}{pyRow("locality", "Localidad")}
+              {pyRow("surface", "Superficie o capacidad")}{pyRow("owner_structure", "Titulares")}{pyRow("cuit", "CUIT")}{pyRow("cadastre", "Datos registrales o catastrales")}
+              {pyRow("title_status", "Titularidad y situación registral")}{row("Cómo se explota", GRANDE_OPERATION_MODES[py.operation_mode])}{pyRow("operator", "Explotador o arrendatario")}{pyRow("lease_contracts", "Contratos")}
+              {pyRow("lease_term", "Plazo de contratos")}{pyRow("rent_basis", "Cómo se fija la renta")}{pyRow("rent_amount", "Renta declarada")}{pyRow("rent_history", "Historial de renta")}
+              {pyRow("income_risks", "De qué depende la renta")}{pyRow("valuation", "Valuación")}{pyRow("taxes_costs", "Impuestos y costos")}{pyRow("insurance", "Seguros")}
+              {pyRow("capex_plan", "Inversiones previstas")}{pyRow("objective", "Objetivo")}{row("Participación a evaluar", GRANDE_INTEREST_MODES[py.interest_mode])}{pyRow("structure_notes", "Ideas sobre la estructura")}
+            </dl>
+          </section>
+        )}
 
         {isPyme && (
           <section className="rounded-xl border border-border bg-background p-5 xl:col-span-2">
@@ -140,7 +156,7 @@ const AdminTokenizateApp = () => {
           <h2 className="mb-1 text-lg font-light">Ficha interna de evaluación</h2>
           <p className="mb-4 text-xs text-muted-foreground">Registro cualitativo del equipo. No genera puntajes, probabilidades ni aprobaciones automáticas.</p>
           <div className="grid gap-4 md:grid-cols-2">
-            {(isPyme ? PYME_EVAL_FIELDS : EVAL_FIELDS).map((f) => (<label key={f.key} className="text-sm">{f.label}<Textarea rows={3} className="mt-1" value={evalF[f.key] ?? ""} onChange={(e) => setEvalF({ ...evalF, [f.key]: e.target.value })} /></label>))}
+            {(isBig ? GRANDE_EVAL_FIELDS : isPyme ? PYME_EVAL_FIELDS : EVAL_FIELDS).map((f) => (<label key={f.key} className="text-sm">{f.label}<Textarea rows={3} className="mt-1" value={evalF[f.key] ?? ""} onChange={(e) => setEvalF({ ...evalF, [f.key]: e.target.value })} /></label>))}
           </div>
           <h3 className="mb-2 mt-5 text-sm font-medium">Honorarios (registro interno, no se publican)</h3>
           {fees.map((f, i) => (

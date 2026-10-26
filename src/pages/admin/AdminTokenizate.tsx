@@ -10,7 +10,7 @@ import { CATEGORIES, STATUS_LABEL, statusLabel } from "@/data/tokenizate";
 import { PYME_ENABLED } from "@/lib/tokenizate/backend";
 
 interface Interested { id: string; created_at: string; name: string; email: string; phone: string | null; country: string; asset_type: string; capital_range: string | null; status: string; marketing_consent: boolean }
-interface AppRow { id: string; expediente: string; status: string; modality?: string; next_action?: string | null; next_action_at?: string | null; pyme?: Record<string, string>; owner_name: string; owner_email: string; owner_country: string | null; category: string | null; project_name: string | null; funding_amount: number | null; funding_currency: string | null; submitted_at: string | null; updated_at: string }
+interface AppRow { id: string; expediente: string; status: string; modality?: string; next_action?: string | null; next_action_at?: string | null; pyme?: Record<string, string>; grande?: Record<string, string>; owner_name: string; owner_email: string; owner_country: string | null; category: string | null; project_name: string | null; funding_amount: number | null; funding_currency: string | null; submitted_at: string | null; updated_at: string }
 
 const select = "h-10 rounded-md border border-input bg-background px-3 text-sm";
 
@@ -109,6 +109,7 @@ const AdminTokenizate = () => {
             <option value="">Todas las modalidades</option>
             <option value="activo">Activos y proyectos</option>
             <option value="produccion_pyme">Producción PyME</option>
+            <option value="campos_industrias">Campos e industrias</option>
           </select>
         )}
         <select className={select} value={status} onChange={(e) => setStatus(e.target.value)} aria-label="Filtrar por estado">
@@ -131,7 +132,7 @@ const AdminTokenizate = () => {
                 <tr key={a.id} className="border-b border-border/50">
                   <td className="p-3"><Link className="font-mono underline" to={`/admin/tokenizate/${a.id}`}>{a.expediente}</Link></td>
                   <td className="p-3">{a.owner_name}<br /><span className="text-xs text-muted-foreground">{a.owner_email}</span></td>
-                  <td className="p-3">{a.project_name ?? "—"}<br /><span className="text-xs text-muted-foreground">{a.modality === "produccion_pyme" ? `Producción PyME${a.pyme?.lot_volume ? ` · ${a.pyme.lot_volume} ${a.pyme.lot_unit ?? ""}` : ""}` : a.category ? CATEGORIES[a.category] : ""}</span></td>
+                  <td className="p-3">{a.project_name ?? "—"}<br /><span className="text-xs text-muted-foreground">{a.modality === "produccion_pyme" ? `Producción PyME${a.pyme?.lot_volume ? ` · ${a.pyme.lot_volume} ${a.pyme.lot_unit ?? ""}` : ""}` : a.modality === "campos_industrias" ? `Campos e industrias${a.grande?.surface ? ` · ${a.grande.surface}` : ""}` : a.category ? CATEGORIES[a.category] : ""}</span></td>
                   <td className="p-3">{a.funding_amount ? `${a.funding_amount.toLocaleString("es-AR")} ${a.funding_currency ?? ""}` : "—"}</td>
                   <td className="p-3">{statusLabel(a.status, a.modality)}</td>
                   <td className="p-3 text-xs">{a.next_action ?? "—"}{a.next_action_at ? <><br /><span className="text-muted-foreground">{new Date(a.next_action_at).toLocaleDateString("es-AR")}</span></> : null}</td>

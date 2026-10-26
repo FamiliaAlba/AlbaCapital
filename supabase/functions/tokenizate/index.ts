@@ -16,12 +16,13 @@ const ORIGINS = [
   "http://127.0.0.1:8080",
 ];
 const STATUSES = ["borrador", "recibido", "revision_preliminar", "documentacion_pendiente", "analisis_tecnico_financiero", "analisis_juridico", "viable_con_condiciones", "propuesta_estructuracion", "no_elegible", "cerrado"];
-const CATEGORIES = ["inmueble_residencial", "hotel_turistico", "maquinaria", "infraestructura_productiva", "proyecto_productivo", "lote_pyme", "otro"];
+const CATEGORIES = ["inmueble_residencial", "hotel_turistico", "maquinaria", "infraestructura_productiva", "proyecto_productivo", "lote_pyme", "campo_industria", "otro"];
 const DOC_CATEGORIES = ["titularidad", "tecnica", "valuacion", "ingresos_costos", "plan_negocios", "contratos", "permisos_seguros", "fotografias", "otros",
-  "identidad_empresarial", "presupuesto_cotizaciones", "tecnica_producto", "habilitaciones", "capacidad_produccion", "antecedentes_ventas", "pedidos_ordenes", "cronograma_flujo", "seguros_respaldos"];
+  "identidad_empresarial", "presupuesto_cotizaciones", "tecnica_producto", "habilitaciones", "capacidad_produccion", "antecedentes_ventas", "pedidos_ordenes", "cronograma_flujo", "seguros_respaldos",
+  "tasacion", "contratos_arrendamiento", "ingresos_renta", "catastro_planos", "impuestos_cargas"];
 const RELATIONS = ["propietario", "representante", "empresa_titular"];
 const STATES = ["operativo", "ampliacion", "desarrollo", "otro"];
-const MODALITIES = ["activo", "produccion_pyme"];
+const MODALITIES = ["activo", "produccion_pyme", "campos_industrias"];
 // Campos de la postulación "Producción PyME" (se guardan en tk_applications.pyme). Longitud máxima por campo.
 const PYME_TEXT: Record<string, number> = {
   contact_name: 160, contact_role: 120, locality: 120, cuit: 30, representation: 600, experience: 1500, capacity: 1500, maker_info: 1000,
@@ -30,17 +31,31 @@ const PYME_TEXT: Record<string, number> = {
 };
 const PYME_ENUMS: Record<string, string[]> = { production_mode: ["propia", "tercerizada", "mixta"], interest_mode: ["entrega_producto", "participacion_economica", "asesoramiento"] };
 const PYME_STATES = ["comprobado", "estimado", "no_tengo", "orientacion"];
-function cleanPyme(input: unknown): Body {
+function cleanBy(input: unknown, text: Record<string, number>, enums: Record<string, string[]>): Body {
   const src = (input && typeof input === "object" ? input : {}) as Body;
   const out: Body = {};
-  for (const [k, max] of Object.entries(PYME_TEXT)) if (typeof src[k] === "string" && src[k].trim()) out[k] = src[k].trim().slice(0, max);
-  for (const [k, list] of Object.entries(PYME_ENUMS)) if (typeof src[k] === "string" && list.includes(src[k])) out[k] = src[k];
+  for (const [k, max] of Object.entries(text)) if (typeof src[k] === "string" && src[k].trim()) out[k] = src[k].trim().slice(0, max);
+  for (const [k, list] of Object.entries(enums)) if (typeof src[k] === "string" && list.includes(src[k])) out[k] = src[k];
   const st: Body = {};
   const states = (src._state && typeof src._state === "object" ? src._state : {}) as Body;
-  for (const [k, v] of Object.entries(states)) if ((k in PYME_TEXT || k in PYME_ENUMS) && typeof v === "string" && PYME_STATES.includes(v)) st[k] = v;
+  for (const [k, v] of Object.entries(states)) if ((k in text || k in enums) && typeof v === "string" && PYME_STATES.includes(v)) st[k] = v;
   if (Object.keys(st).length) out._state = st;
   return out;
 }
+const cleanPyme = (input: unknown): Body => cleanBy(input, PYME_TEXT, PYME_ENUMS);
+
+// Campos de la postulación "Campos e industrias" (se guardan en tk_applications.grande).
+const GRANDE_TEXT: Record<string, number> = {
+  contact_name: 160, contact_role: 120, locality: 120, surface: 120, owner_structure: 300, cuit: 30, title_status: 600, cadastre: 300,
+  operator: 600, lease_contracts: 1500, lease_term: 300, rent_basis: 600, rent_amount: 300, rent_history: 1500, income_risks: 1500,
+  valuation: 800, taxes_costs: 800, capex_plan: 1500, insurance: 800, structure_notes: 1500, objective: 800,
+};
+const GRANDE_ENUMS: Record<string, string[]> = {
+  asset_kind: ["campo_agricola", "campo_ganadero", "planta_industrial", "logistica_agroindustria", "otra_industria"],
+  operation_mode: ["arrendado", "explotacion_propia", "mixta", "sin_operar"],
+  interest_mode: ["participacion_renta", "participacion_venta", "asesoramiento"],
+};
+const cleanGrande = (input: unknown): Body => cleanBy(input, GRANDE_TEXT, GRANDE_ENUMS);
 
 const MIME_EXT: Record<string, string[]> = { "application/pdf": ["pdf"], "image/jpeg": ["jpg", "jpeg"], "image/png": ["png"] };
 
@@ -125,7 +140,7 @@ function requireLegal(body: Body, ...keys: string[]) {
 }
 
 const APP_PUBLIC_COLS =
-  "id, expediente, status, stage, owner_name, owner_email, owner_phone, owner_country, owner_province, owner_relation, owner_tax_id, project_name, category, location, summary, project_state, value_amount, value_currency, funding_amount, funding_currency, funds_use, generates_income, has_liens, liens_detail, data, declarations, submitted_at, email_status, created_at, updated_at, modality, pyme";
+  "id, expediente, status, stage, owner_name, owner_email, owner_phone, owner_country, owner_province, owner_relation, owner_tax_id, project_name, category, location, summary, project_state, value_amount, value_currency, funding_amount, funding_currency, funds_use, generates_income, has_liens, liens_detail, data, declarations, submitted_at, email_status, created_at, updated_at, modality, pyme, grande";
 
 async function authOwner(req: Request, body: Body) {
   const ip = await ipKey(req);
@@ -201,27 +216,28 @@ async function handle(action: string, body: Body, req: Request): Promise<unknown
       const email = str(o.email, 255).toLowerCase();
       const name = str(o.name, 160);
       if (name.length < 2 || !EMAIL.test(email)) throw new HttpError(400, "Revisá el nombre y el correo.");
-      const relation = oneOf(o.relation, RELATIONS) ?? (modality === "produccion_pyme" ? "empresa_titular" : null);
+      const relation = oneOf(o.relation, RELATIONS) ?? (modality !== "activo" ? "empresa_titular" : null);
       if (!relation) throw new HttpError(400, "Indicá tu relación con el activo.");
       const extra: Body = {};
-      if (modality === "produccion_pyme") {
-        // Primer paso corto: datos de contacto y del proyecto productivo.
-        const py = cleanPyme(body.pyme);
-        const prod = str(body.product, 160);
+      if (modality === "produccion_pyme" || modality === "campos_industrias") {
+        // Primer paso corto: datos de contacto y del proyecto (producción PyME o gran activo de renta).
+        const isBig = modality === "campos_industrias";
+        const py = isBig ? cleanGrande(body.grande) : cleanPyme(body.pyme);
+        const prod = str(isBig ? body.assetName : body.product, 160);
         const summary = str(body.summary, 3000);
         const amount = num(body.fundingAmount);
         const currency = oneOf(body.fundingCurrency, ["ARS", "USD"]);
         const use = str(body.fundsUse, 2000);
         const province = str(o.province, 80);
-        if (!py.contact_name || !str(o.phone, 40) || !province || !py.locality || prod.length < 2 || summary.length < 10 || !amount || !currency || use.length < 3) throw new HttpError(400, "Completá los datos obligatorios del primer paso.");
-        Object.assign(extra, { modality, pyme: py, category: "lote_pyme", project_name: prod, summary, location: `${py.locality}, ${province}`, funding_amount: amount, funding_currency: currency, funds_use: use });
+        if (!py.contact_name || !str(o.phone, 40) || !province || !py.locality || prod.length < 2 || summary.length < 10 || !amount || !currency || use.length < 3 || (isBig && !py.asset_kind)) throw new HttpError(400, "Completá los datos obligatorios del primer paso.");
+        Object.assign(extra, { modality, [isBig ? "grande" : "pyme"]: py, category: isBig ? "campo_industria" : "lote_pyme", project_name: prod, summary, location: `${py.locality}, ${province}`, funding_amount: amount, funding_currency: currency, funds_use: use });
       }
       await rate(await ipKey(req), "app_start", 5, 3600);
       const key = genKey();
       const now = new Date().toISOString();
       const { data, error } = await db.from("tk_applications").insert({
         access_hash: await sha256(normKey(key)), owner_name: name, owner_email: email, owner_phone: opt(o.phone, 40),
-        owner_country: opt(o.country, 80) ?? (modality === "produccion_pyme" ? "Argentina" : null), owner_province: opt(o.province, 80), owner_relation: relation,
+        owner_country: opt(o.country, 80) ?? (modality !== "activo" ? "Argentina" : null), owner_province: opt(o.province, 80), owner_relation: relation,
         terms_version: LEGAL_VERSION, privacy_version: LEGAL_VERSION,
         declarations: { terms_accepted_at: now, privacy_accepted_at: now },
         ...extra,
@@ -272,6 +288,7 @@ async function handle(action: string, body: Body, req: Request): Promise<unknown
         put("data", d);
       }
       if (body.pyme && typeof body.pyme === "object" && a.modality === "produccion_pyme") put("pyme", cleanPyme(body.pyme));
+      if (body.grande && typeof body.grande === "object" && a.modality === "campos_industrias") put("grande", cleanGrande(body.grande));
       if (Number.isInteger(body.stage) && body.stage >= 1 && body.stage <= 6) put("stage", body.stage);
       if (Object.keys(patch).length === 0) return { ok: true };
       const { error } = await db.from("tk_applications").update(patch).eq("id", a.id);
@@ -357,12 +374,13 @@ async function handle(action: string, body: Body, req: Request): Promise<unknown
       const a = await authOwner(req, body);
       if (a.status !== "borrador") throw new HttpError(409, "La postulación ya fue enviada.");
       const { data: app } = await db.from("tk_applications").select("*").eq("id", a.id).single();
-      const isPyme = app.modality === "produccion_pyme";
+      const isBig = app.modality === "campos_industrias";
+      const isPyme = app.modality === "produccion_pyme" || isBig; // ambas modalidades usan el mismo circuito corto de envío
       const required = isPyme
         ? ["project_name", "location", "summary", "funding_amount", "funding_currency", "funds_use", "owner_country", "owner_province", "owner_phone"]
         : ["project_name", "category", "location", "summary", "project_state", "funding_amount", "funding_currency", "funds_use", "generates_income", "has_liens", "owner_country", "owner_relation"];
       const missing = required.filter((k) => app[k] === null || app[k] === "");
-      if (isPyme && !app.pyme?.contact_name) missing.push("contact_name");
+      if (isPyme && !(isBig ? app.grande : app.pyme)?.contact_name) missing.push("contact_name");
       if (missing.length) throw new HttpError(400, "Completá los datos obligatorios antes de enviar.");
       const d = body.declarations ?? {};
       if (d.veracity !== true || d.data_processing !== true || d.no_guarantee !== true) throw new HttpError(400, "Tenés que aceptar las tres declaraciones obligatorias.");
@@ -378,11 +396,11 @@ async function handle(action: string, body: Body, req: Request): Promise<unknown
       // La postulación ya está guardada: el resultado del correo se informa por separado y nunca la deshace.
       const mail = await sendMail(
         app.owner_email,
-        `Recibimos tu postulación ${a.expediente} | ${isPyme ? "Producción PyME" : "Tokenizate"}`,
-        `Hola ${app.owner_name},\n\nRecibimos tu postulación ${isPyme ? "de Producción PyME " : ""}en Tokenizate | Alba Capital.\nNúmero de expediente: ${a.expediente}\n\nPara consultar el estado ingresá a ${SITE}/tokenizate/postular?modo=consultar con tu número de expediente y la clave de acceso que se te mostró al crearlo (por seguridad no la incluimos en este correo).\n\nRecordá que presentar el proyecto no garantiza aprobación, financiación ni emisión de tokens, y que Alba Capital no está obligada a estructurarlo ni ofrecerlo. ${isPyme ? "La postulación inicia una evaluación: no garantiza financiación ni emisión de tokens. " : ""}Todo se analiza y aprueba primero; si corresponde y hay acuerdo definitivo, se formaliza con un contrato.\n\nAlba Capital`,
+        `Recibimos tu postulación ${a.expediente} | ${isBig ? "Campos e industrias" : isPyme ? "Producción PyME" : "Tokenizate"}`,
+        `Hola ${app.owner_name},\n\nRecibimos tu postulación ${isBig ? "de Campos e industrias " : isPyme ? "de Producción PyME " : ""}en Tokenizate | Alba Capital.\nNúmero de expediente: ${a.expediente}\n\nPara consultar el estado ingresá a ${SITE}/tokenizate/postular?modo=consultar con tu número de expediente y la clave de acceso que se te mostró al crearlo (por seguridad no la incluimos en este correo).\n\nRecordá que presentar el proyecto no garantiza aprobación, financiación ni emisión de tokens, y que Alba Capital no está obligada a estructurarlo ni ofrecerlo. ${isPyme ? "La postulación inicia una evaluación: no garantiza financiación ni emisión de tokens. " : ""}Todo se analiza y aprueba primero; si corresponde y hay acuerdo definitivo, se formaliza con un contrato.\n\nAlba Capital`,
       );
       await db.from("tk_applications").update({ email_status: mail === "sent" ? "sent" : mail === "failed" ? "failed" : "not_configured" }).eq("id", a.id);
-      if (teamEmail()) await sendMail(teamEmail(), `Tokenizate: nueva postulación ${isPyme ? "Producción PyME " : ""}${a.expediente}`, `Se recibió una nueva postulación.\n\nRevisala en el panel (requiere iniciar sesión):\n${SITE}/admin/tokenizate/${a.id}\n\nNo se adjuntan documentos.`);
+      if (teamEmail()) await sendMail(teamEmail(), `Tokenizate: nueva postulación ${isBig ? "Campos e industrias " : isPyme ? "Producción PyME " : ""}${a.expediente}`, `Se recibió una nueva postulación.\n\nRevisala en el panel (requiere iniciar sesión):\n${SITE}/admin/tokenizate/${a.id}\n\nNo se adjuntan documentos.`);
       return { ok: true, expediente: a.expediente, status: "recibido", email: mail };
     }
 
@@ -405,7 +423,7 @@ async function handle(action: string, body: Body, req: Request): Promise<unknown
 
     case "admin_list_apps": {
       await requireStaff(req);
-      let q = db.from("tk_applications").select("id, expediente, status, modality, owner_name, owner_email, owner_country, category, project_name, funding_amount, funding_currency, assigned_to, next_action, next_action_at, pyme, submitted_at, created_at, updated_at").order("updated_at", { ascending: false }).limit(300);
+      let q = db.from("tk_applications").select("id, expediente, status, modality, owner_name, owner_email, owner_country, category, project_name, funding_amount, funding_currency, assigned_to, next_action, next_action_at, pyme, grande, submitted_at, created_at, updated_at").order("updated_at", { ascending: false }).limit(300);
       if (oneOf(body.status, STATUSES)) q = q.eq("status", body.status);
       if (oneOf(body.modality, MODALITIES)) q = q.eq("modality", body.modality);
       const term = str(body.q, 80).replace(/[%,()]/g, " ");

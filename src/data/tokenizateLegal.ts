@@ -243,18 +243,37 @@ const PYME_TERMS: LegalSection[] = [
     ],
   },
 ];
+const CAMPOS_TERMS: LegalSection[] = [
+  {
+    title: "Campos e industrias: alcance",
+    paragraphs: [
+      "La modalidad Campos e industrias permite presentar un campo, una planta u otro activo de renta para que Alba Capital evalúe si existe una estructura adecuada de financiación o incorporación de participantes. Postular no garantiza financiación, emisión de tokens ni la apertura de ninguna oferta, y no obliga a Alba Capital a analizar, estructurar, ofrecer ni comercializar el activo.",
+      "Alba Capital no explota, administra operativamente ni arrienda el activo: lo hace su titular o un tercero. La renta depende de los contratos y de factores externos (por ejemplo, el precio de la producción, el clima y el mercado), y ni ella ni la devolución del capital están garantizadas.",
+    ],
+  },
+  {
+    title: "Campos e industrias: condiciones previas",
+    items: [
+      "Antes de cualquier eventual operación deberán verificarse la titularidad, la situación registral, las cargas y los contratos del activo, contar con una valuación independiente y definir el encuadre normativo aplicable (oferta pública u oferta privada, participantes y autorizaciones).",
+      "Una participación digital representa únicamente los derechos que establezca el instrumento jurídico de cada proyecto; no implica automáticamente la propiedad directa de una fracción física del activo.",
+      "Los ejemplos y casos mencionados, incluidos los de terceros, son ilustrativos: no implican alianza ni condiciones o resultados para proyectos de Alba Capital.",
+    ],
+  },
+];
+const CAMPOS_PRIVACY_ITEM =
+  "Si postulás un campo o industria: datos del titular y del contacto, del activo (superficie, ubicación, datos registrales o catastrales), contratos de arrendamiento u operación, rentas, tasaciones y la documentación que adjuntes. No se publican automáticamente ni se envían a servicios externos de inteligencia artificial.";
 const PYME_PRIVACY_ITEM =
   "Si postulás una producción PyME: datos de la empresa y de contacto, del producto y del lote, presupuesto, costos, ventas, clientes, pedidos y la documentación comercial que adjuntes. No se publican automáticamente ni se envían a servicios externos de inteligencia artificial.";
 
 export const BASES_Y_CONDICIONES: LegalDoc = PYME_ENABLED
-  ? { ...BASES_BASE, sections: [...BASES_BASE.sections.slice(0, 4), ...PYME_TERMS, ...BASES_BASE.sections.slice(4)] }
+  ? { ...BASES_BASE, sections: [...BASES_BASE.sections.slice(0, 4), ...PYME_TERMS, ...CAMPOS_TERMS, ...BASES_BASE.sections.slice(4)] }
   : BASES_BASE;
 
 export const POLITICA_PRIVACIDAD: LegalDoc = PYME_ENABLED
   ? {
       ...PRIVACIDAD_BASE,
       sections: PRIVACIDAD_BASE.sections.map((sec) =>
-        sec.title === "2. Qué datos tratamos" && sec.items ? { ...sec, items: [...sec.items.slice(0, 2), PYME_PRIVACY_ITEM, ...sec.items.slice(2)] } : sec,
+        sec.title === "2. Qué datos tratamos" && sec.items ? { ...sec, items: [...sec.items.slice(0, 2), PYME_PRIVACY_ITEM, CAMPOS_PRIVACY_ITEM, ...sec.items.slice(2)] } : sec,
       ),
     }
   : PRIVACIDAD_BASE;

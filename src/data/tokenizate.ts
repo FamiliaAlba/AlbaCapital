@@ -35,6 +35,7 @@ export const CATEGORIES: Record<string, string> = {
   infraestructura_productiva: "Infraestructura productiva o logística",
   proyecto_productivo: "Proyecto productivo",
   lote_pyme: "Lote o producción PyME",
+  campo_industria: "Campo o industria",
   otro: "Otro activo",
 };
 
@@ -145,7 +146,9 @@ export const PYME_STATUS_LABEL: Record<string, string> = {
   cerrado: "Archivada",
 };
 export const statusLabel = (status: string, modality?: string): string =>
-  (modality === "produccion_pyme" ? PYME_STATUS_LABEL : STATUS_LABEL)[status] ?? status;
+  (modality === "produccion_pyme" || modality === "campos_industrias" ? PYME_STATUS_LABEL : STATUS_LABEL)[status] ?? status;
+
+export const MODALITY_LABEL: Record<string, string> = { activo: "Activo o proyecto", produccion_pyme: "Producción PyME", campos_industrias: "Campos e industrias" };
 
 export const PYME_DOC_CATEGORIES: Record<string, string> = {
   identidad_empresarial: "Identidad empresarial y representación",
@@ -159,8 +162,20 @@ export const PYME_DOC_CATEGORIES: Record<string, string> = {
   fotografias: "Fotografías",
   seguros_respaldos: "Seguros y otros respaldos",
 };
+export const GRANDE_DOC_CATEGORIES: Record<string, string> = {
+  titularidad: "Titularidad y situación registral",
+  catastro_planos: "Planos y datos catastrales",
+  tasacion: "Tasación o valuación",
+  contratos_arrendamiento: "Contratos de arrendamiento u operación",
+  ingresos_renta: "Historial de ingresos y renta",
+  impuestos_cargas: "Situación impositiva y cargas",
+  habilitaciones: "Habilitaciones y permisos",
+  seguros_respaldos: "Seguros y otros respaldos",
+  fotografias: "Fotografías",
+  identidad_empresarial: "Identidad y representación",
+};
 /** Nombre legible de cualquier categoría de documento, de cualquier modalidad. */
-export const ALL_DOC_CATEGORIES: Record<string, string> = { ...DOC_CATEGORIES, ...PYME_DOC_CATEGORIES };
+export const ALL_DOC_CATEGORIES: Record<string, string> = { ...DOC_CATEGORIES, ...PYME_DOC_CATEGORIES, ...GRANDE_DOC_CATEGORIES };
 
 export const PYME_CHECKLIST: { cat: string; text: string; initial: boolean; mode?: "propia" | "tercerizada" | "mixta" }[] = [
   { cat: "identidad_empresarial", text: "Constancia de CUIT y datos de la empresa", initial: true },
@@ -196,4 +211,49 @@ export const PYME_EVAL_FIELDS: { key: string; label: string }[] = [
   { key: "p_escenario_conservador", label: "Escenario conservador (con supuestos explícitos)" },
   { key: "p_escenario_base", label: "Escenario base (con supuestos explícitos)" },
   { key: "p_escenario_favorable", label: "Escenario favorable (con supuestos explícitos)" },
+];
+
+export const GRANDE_ASSET_KINDS: Record<string, string> = {
+  campo_agricola: "Campo agrícola",
+  campo_ganadero: "Campo ganadero",
+  planta_industrial: "Planta industrial",
+  logistica_agroindustria: "Logística o agroindustria",
+  otra_industria: "Otra industria o activo de renta",
+};
+export const GRANDE_OPERATION_MODES: Record<string, string> = {
+  arrendado: "Arrendado a terceros",
+  explotacion_propia: "Explotación propia",
+  mixta: "Mixta",
+  sin_operar: "Sin operar actualmente",
+};
+export const GRANDE_INTEREST_MODES: Record<string, string> = {
+  participacion_renta: "Participación en la renta del activo",
+  participacion_venta: "Participación en el resultado de una venta futura",
+  asesoramiento: "Necesito asesoramiento para definirlo",
+};
+export const GRANDE_CHECKLIST: { cat: string; text: string; initial: boolean }[] = [
+  { cat: "titularidad", text: "Título de propiedad e informe de dominio", initial: true },
+  { cat: "catastro_planos", text: "Planos, mensura y datos catastrales", initial: false },
+  { cat: "tasacion", text: "Tasación o valuación disponible", initial: false },
+  { cat: "contratos_arrendamiento", text: "Contratos de arrendamiento u operación vigentes", initial: true },
+  { cat: "ingresos_renta", text: "Historial de ingresos y renta de las últimas campañas o ejercicios", initial: false },
+  { cat: "impuestos_cargas", text: "Constancias impositivas y de libre deuda", initial: false },
+  { cat: "habilitaciones", text: "Habilitaciones y permisos (si es una planta o industria)", initial: false },
+  { cat: "seguros_respaldos", text: "Seguros y otros respaldos", initial: false },
+  { cat: "identidad_empresarial", text: "Identidad de los titulares y representación", initial: true },
+  { cat: "fotografias", text: "Fotografías del activo", initial: true },
+];
+export const GRANDE_EVAL_FIELDS: { key: string; label: string }[] = [
+  { key: "g_titularidad", label: "Titularidad y situación registral" },
+  { key: "g_valuacion", label: "Valuación independiente" },
+  { key: "g_operador", label: "Operador o arrendatario y solidez de los contratos" },
+  { key: "g_renta", label: "Renta y su variabilidad (precio de la producción, clima, mercado)" },
+  { key: "g_cargas", label: "Cargas, gravámenes y situación impositiva" },
+  { key: "g_costos_estructura", label: "Costos legales, tecnológicos y administrativos de la estructura" },
+  { key: "g_encuadre", label: "Encuadre regulatorio (oferta pública o privada, participantes, autorizaciones)" },
+  { key: "g_riesgos", label: "Riesgos principales" },
+  { key: "g_recomendacion", label: "Recomendación del equipo" },
+  { key: "g_escenario_conservador", label: "Escenario conservador (con supuestos explícitos)" },
+  { key: "g_escenario_base", label: "Escenario base (con supuestos explícitos)" },
+  { key: "g_escenario_favorable", label: "Escenario favorable (con supuestos explícitos)" },
 ];

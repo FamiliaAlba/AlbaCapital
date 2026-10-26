@@ -40,7 +40,7 @@ const STATE_LABEL: Record<string, string> = { "": "Sin indicar", comprobado: "Da
 
 interface FP { k: string; text: string; pyme: Pyme; setPyme: (p: Pyme) => void; long?: boolean; rows?: number; hint?: string; withState?: boolean; placeholder?: string }
 /** Campo de texto con indicación de si el dato está comprobado, es una estimación o falta. */
-const Field = ({ k, text, pyme, setPyme, long, rows = 3, hint, withState = true, placeholder }: FP) => {
+export const Field = ({ k, text, pyme, setPyme, long, rows = 3, hint, withState = true, placeholder }: FP) => {
   const state = pyme._state?.[k] ?? "";
   const set = (v: string) => setPyme({ ...pyme, [k]: v });
   const setState = (v: string) => setPyme({ ...pyme, _state: { ...(pyme._state ?? {}), ...(v ? { [k]: v } : {}) } });
