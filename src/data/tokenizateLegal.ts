@@ -260,20 +260,39 @@ const CAMPOS_TERMS: LegalSection[] = [
     ],
   },
 ];
+const DESARROLLOS_TERMS: LegalSection[] = [
+  {
+    title: "Desarrollos fraccionados: alcance",
+    paragraphs: [
+      "La modalidad Desarrollos fraccionados permite presentar un desarrollo inmobiliario u hotelero para que Alba Capital evalúe si existe una estructura adecuada para financiarlo con participaciones de menor importe. Postular no garantiza financiación, emisión de tokens ni la apertura de ninguna oferta, y no obliga a Alba Capital a analizar, estructurar, ofrecer ni comercializar el proyecto.",
+      "Alba Capital no desarrolla, construye ni opera el proyecto, no actúa como fiduciario ni administra los fondos por este medio. La obra, la operación y la renta dependen del desarrollador, del operador y del mercado; las proyecciones son estimaciones y ni la renta ni la devolución del capital están garantizadas.",
+    ],
+  },
+  {
+    title: "Desarrollos fraccionados: condiciones previas",
+    items: [
+      "Antes de cualquier eventual operación deberán definirse la titularidad del terreno, los permisos de obra, el presupuesto y el cronograma, el contrato con el operador, el vehículo jurídico (por ejemplo, un fideicomiso con fiduciario), los derechos de los participantes, el tratamiento impositivo y el encuadre normativo aplicable (oferta pública u oferta privada, participantes y autorizaciones).",
+      "Deberán preverse las condiciones ante demoras, sobrecostos, financiación insuficiente, baja ocupación o ventas inferiores a las proyectadas, y la forma de salida o reventa de las participaciones, que no está garantizada.",
+      "Las unidades o fracciones y los derechos que correspondan a cada participante serán los que establezcan los instrumentos jurídicos de cada proyecto aprobado.",
+    ],
+  },
+];
+const DESARROLLOS_PRIVACY_ITEM =
+  "Si postulás un desarrollo inmobiliario u hotelero: datos de la sociedad y del contacto, del terreno y del proyecto, permisos, presupuestos, contratos con el operador, proyecciones y la documentación que adjuntes. No se publican automáticamente ni se envían a servicios externos de inteligencia artificial.";
 const CAMPOS_PRIVACY_ITEM =
   "Si postulás un campo o industria: datos del titular y del contacto, del activo (superficie, ubicación, datos registrales o catastrales), contratos de arrendamiento u operación, rentas, tasaciones y la documentación que adjuntes. No se publican automáticamente ni se envían a servicios externos de inteligencia artificial.";
 const PYME_PRIVACY_ITEM =
   "Si postulás una producción PyME: datos de la empresa y de contacto, del producto y del lote, presupuesto, costos, ventas, clientes, pedidos y la documentación comercial que adjuntes. No se publican automáticamente ni se envían a servicios externos de inteligencia artificial.";
 
 export const BASES_Y_CONDICIONES: LegalDoc = PYME_ENABLED
-  ? { ...BASES_BASE, sections: [...BASES_BASE.sections.slice(0, 4), ...PYME_TERMS, ...CAMPOS_TERMS, ...BASES_BASE.sections.slice(4)] }
+  ? { ...BASES_BASE, sections: [...BASES_BASE.sections.slice(0, 4), ...PYME_TERMS, ...CAMPOS_TERMS, ...DESARROLLOS_TERMS, ...BASES_BASE.sections.slice(4)] }
   : BASES_BASE;
 
 export const POLITICA_PRIVACIDAD: LegalDoc = PYME_ENABLED
   ? {
       ...PRIVACIDAD_BASE,
       sections: PRIVACIDAD_BASE.sections.map((sec) =>
-        sec.title === "2. Qué datos tratamos" && sec.items ? { ...sec, items: [...sec.items.slice(0, 2), PYME_PRIVACY_ITEM, CAMPOS_PRIVACY_ITEM, ...sec.items.slice(2)] } : sec,
+        sec.title === "2. Qué datos tratamos" && sec.items ? { ...sec, items: [...sec.items.slice(0, 2), PYME_PRIVACY_ITEM, CAMPOS_PRIVACY_ITEM, DESARROLLOS_PRIVACY_ITEM, ...sec.items.slice(2)] } : sec,
       ),
     }
   : PRIVACIDAD_BASE;

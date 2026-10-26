@@ -3,13 +3,13 @@ import { Link } from "react-router-dom";
 import { CheckCircle2, Download, FileText, KeyRound, Loader2, Trash2, UploadCloud, X, AlertTriangle } from "lucide-react";
 import { tkApi, uploadToSignedUrl } from "@/lib/tokenizate/api";
 import { DocPanel, type DocRow, type QueueItem } from "./DocPanel";
-import { PymeStartForm, PymeStep, type Pyme } from "./PymeForm";
-import { GrandeStartForm, GrandeStep } from "./GrandeForm";
+import type { Pyme } from "./PymeForm";
+import ModalDraft from "./ModalDraft";
+import { MOD_CONFIG } from "./modalities";
 import { PYME_ENABLED } from "@/lib/tokenizate/backend";
 import {
   ALLOWED_EXT, ALLOWED_MIME, CATEGORIES, CHECKLISTS, COUNTRIES, DOC_CATEGORIES, PROJECT_STATES, PROVINCES, RELATIONS, TK_LEGAL_VERSION,
-  PYME_CHECKLIST, PYME_DOC_CATEGORIES, PYME_INTEREST_MODES, PYME_PRODUCTION_MODES, statusLabel,
-  GRANDE_ASSET_KINDS, GRANDE_CHECKLIST, GRANDE_DOC_CATEGORIES, GRANDE_INTEREST_MODES, GRANDE_OPERATION_MODES,
+  statusLabel,
 } from "@/data/tokenizate";
 
 const field = "mt-1.5 w-full rounded-lg border border-input bg-white px-3.5 py-2.5 text-base text-foreground placeholder:text-[#6B7280] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:bg-[#F3F5F8]";
@@ -40,7 +40,7 @@ const saveCred = (c: Cred | null) => {
 const STEPS = ["Propietario", "Activo", "Documentación", "Revisión y envío"];
 const fmtMB = (b: number) => `${(b / 1024 / 1024).toFixed(b > 1048576 ? 1 : 2)} MB`;
 
-const ApplicationFlow = ({ consult, initialModality = "activo" }: { consult: boolean; initialModality?: "activo" | "produccion_pyme" | "campos_industrias" }) => {
+const ApplicationFlow = ({ consult, initialModality = "activo" }: { consult: boolean; initialModality?: string }) => {
   const [cred, setCred] = useState<Cred | null>(() => loadCred());
   const [loaded, setLoaded] = useState<Loaded | null>(null);
   const [loading, setLoading] = useState(false);
@@ -48,9 +48,8 @@ const ApplicationFlow = ({ consult, initialModality = "activo" }: { consult: boo
   const [mode, setMode] = useState<"new" | "consult">(consult ? "consult" : "new");
   const [issued, setIssued] = useState<Cred | null>(null);
   const [keySaved, setKeySaved] = useState(false);
-  const [modality, setModality] = useState<"activo" | "produccion_pyme" | "campos_industrias">(PYME_ENABLED ? initialModality : "activo");
-  const [pyme, setPyme] = useState<Pyme>({});
-  const [grande, setGrande] = useState<Pyme>({});
+  const [modality, setModality] = useState<string>(PYME_ENABLED ? initialModality : "activo");
+  const [modData, setModData] = useState<Pyme>({});
   const [step, setStep] = useState(1);
   const [form, setForm] = useState<Fields>({});
   const [data, setData] = useState<Record<string, string | boolean>>({});
@@ -66,8 +65,7 @@ const ApplicationFlow = ({ consult, initialModality = "activo" }: { consult: boo
   const refresh = useCallback(async (c: Cred) => {
     const r = await tkApi<Loaded>("app_get", { ...c });
     setLoaded(r);
-    setPyme((p) => (Object.keys(p).length ? p : (a0(r).pyme as Pyme) ?? {}));
-    setGrande((g) => (Object.keys(g).length ? g : (a0(r).grande as Pyme) ?? {}));
+    setModData((m) => (Object.keys(m).length ? m : ((a0(r)[MOD_CONFIG[a0(r).modality]?.col ?? "_"] as Pyme) ?? {})));
     const a = r.application;
     setForm((f) => (Object.keys(f).length ? f : Object.fromEntries(Object.entries(a).map(([k, v]) => [k, v === null ? "" : String(v)]))));
     setData((d) => (Object.keys(d).length ? d : (a.data as Record<string, string | boolean>) ?? {}));
@@ -90,12 +88,9 @@ const ApplicationFlow = ({ consult, initialModality = "activo" }: { consult: boo
     try {
       const keys = ["owner_name", "owner_phone", "owner_country", "owner_province", "owner_relation", "owner_tax_id", "project_name", "category", "location", "summary", "project_state", "value_amount", "value_currency", "funding_amount", "funding_currency", "funds_use", "generates_income", "has_liens", "liens_detail"];
       const fields = Object.fromEntries(keys.map((k) => [k, form[k] ?? ""]));
-      const mdl = loaded?.application.modality;
-      const isPymeApp = mdl === "produccion_pyme";
-      const isBigApp = mdl === "campos_industrias";
-      if (isPymeApp) fields.location = `${pyme.locality ?? ""}, ${form.owner_province ?? ""}`;
-      if (isBigApp) fields.location = `${grande.locality ?? ""}, ${form.owner_province ?? ""}`;
-      await tkApi("app_save", { ...cred, fields, data, ...(isPymeApp ? { pyme } : isBigApp ? { grande } : {}), stage: nextStep ?? step });
+      const mcfg = MOD_CONFIG[loaded?.application.modality ?? ""];
+      if (mcfg) fields.location = `${modData.locality ?? ""}, ${form.owner_province ?? ""}`;
+      await tkApi("app_save", { ...cred, fields, data, ...(mcfg ? { [mcfg.col]: modData } : {}), stage: nextStep ?? step });
       setSaving("saved");
       return true;
     } catch (e) {
@@ -103,7 +98,7 @@ const ApplicationFlow = ({ consult, initialModality = "activo" }: { consult: boo
       setError(e instanceof Error ? e.message : "No se pudo guardar");
       return false;
     }
-  }, [cred, isDraft, form, data, step, pyme, grande, loaded]);
+  }, [cred, isDraft, form, data, step, modData, loaded]);
 
   // ---------- acceso inicial ----------
   const [accessErr, setAccessErr] = useState<string | null>(null);
@@ -125,41 +120,16 @@ const ApplicationFlow = ({ consult, initialModality = "activo" }: { consult: boo
       setLoading(false);
     }
   };
-  const startPyme = async (e: React.FormEvent<HTMLFormElement>) => {
+  const startModal = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setAccessErr(null);
+    const mc = MOD_CONFIG[modality];
+    if (!mc) return;
     const f = new FormData(e.currentTarget);
     if (f.get("terms") !== "on" || f.get("privacy") !== "on") return setAccessErr("Para continuar, aceptá las Bases y Condiciones y la Política de Privacidad.");
     setLoading(true);
     try {
-      const r = await tkApi<Cred>("app_start", {
-        modality: "produccion_pyme",
-        owner: { name: f.get("name"), email: f.get("email"), phone: f.get("phone"), country: f.get("country"), province: f.get("province"), relation: "empresa_titular" },
-        pyme: { contact_name: f.get("contact_name"), contact_role: f.get("contact_role"), locality: f.get("locality") },
-        product: f.get("product"), summary: f.get("summary"), fundingAmount: f.get("fundingAmount"), fundingCurrency: f.get("fundingCurrency"), fundsUse: f.get("fundsUse"),
-        terms: true, privacy: true, legalVersion: TK_LEGAL_VERSION, website: f.get("website"),
-      });
-      setIssued(r);
-    } catch (err) {
-      setAccessErr(err instanceof Error ? err.message : "No se pudo crear el expediente");
-    } finally {
-      setLoading(false);
-    }
-  };
-  const startGrande = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setAccessErr(null);
-    const f = new FormData(e.currentTarget);
-    if (f.get("terms") !== "on" || f.get("privacy") !== "on") return setAccessErr("Para continuar, aceptá las Bases y Condiciones y la Política de Privacidad.");
-    setLoading(true);
-    try {
-      const r = await tkApi<Cred>("app_start", {
-        modality: "campos_industrias",
-        owner: { name: f.get("name"), email: f.get("email"), phone: f.get("phone"), country: f.get("country"), province: f.get("province"), relation: "propietario" },
-        grande: { contact_name: f.get("contact_name"), contact_role: f.get("contact_role"), locality: f.get("locality"), asset_kind: f.get("asset_kind") },
-        assetName: f.get("assetName"), summary: f.get("summary"), fundingAmount: f.get("fundingAmount"), fundingCurrency: f.get("fundingCurrency"), fundsUse: f.get("fundsUse"),
-        terms: true, privacy: true, legalVersion: TK_LEGAL_VERSION, website: f.get("website"),
-      });
+      const r = await tkApi<Cred>("app_start", { ...mc.startPayload(f), terms: true, privacy: true, legalVersion: TK_LEGAL_VERSION, website: f.get("website") });
       setIssued(r);
     } catch (err) {
       setAccessErr(err instanceof Error ? err.message : "No se pudo crear el expediente");
@@ -184,7 +154,7 @@ const ApplicationFlow = ({ consult, initialModality = "activo" }: { consult: boo
     }
   };
   const continueWithIssued = () => { if (issued) { saveCred(issued); setCred(issued); setIssued(null); setKeySaved(false); } };
-  const exit = () => { saveCred(null); setCred(null); setLoaded(null); setForm({}); setData({}); setPyme({}); setGrande({}); setResult(null); setStep(1); };
+  const exit = () => { saveCred(null); setCred(null); setLoaded(null); setForm({}); setData({}); setModData({}); setResult(null); setStep(1); };
 
   // ---------- documentos ----------
   const addFiles = async (files: FileList | File[]) => {
@@ -223,7 +193,7 @@ const ApplicationFlow = ({ consult, initialModality = "activo" }: { consult: boo
     setError(null);
     setSubmitting(true);
     try {
-      if (!(await save(isPymeApp ? 6 : 4))) return;
+      if (!(await save(cfg ? 6 : 4))) return;
       const r = await tkApi<{ expediente: string; email: string }>("app_submit", { ...cred, declarations: decl, legalVersion: TK_LEGAL_VERSION });
       setResult(r);
       await refresh(cred);
@@ -235,14 +205,12 @@ const ApplicationFlow = ({ consult, initialModality = "activo" }: { consult: boo
   };
 
   const checklist = useMemo(() => CHECKLISTS[form.category] ?? CHECKLISTS.otro, [form.category]);
-  const isPymeApp = loaded?.application.modality === "produccion_pyme";
-  const isBigApp = loaded?.application.modality === "campos_industrias";
+  const cfg = loaded ? MOD_CONFIG[loaded.application.modality] : undefined;
   useEffect(() => {
-    if (isPymeApp && !(docCat in PYME_DOC_CATEGORIES)) setDocCat("identidad_empresarial");
-    if (isBigApp && !(docCat in GRANDE_DOC_CATEGORIES)) setDocCat("titularidad");
-  }, [isPymeApp, isBigApp, docCat]);
-  const missingForSubmit = isPymeApp || isBigApp
-    ? [...["project_name", "summary", "funding_amount", "funding_currency", "funds_use", "owner_country", "owner_province", "owner_phone"].filter((k) => !form[k]), ...((isBigApp ? grande : pyme).contact_name && (isBigApp ? grande : pyme).locality ? [] : ["contacto"])]
+    if (cfg && !(docCat in cfg.docCats)) setDocCat(cfg.defaultDocCat);
+  }, [cfg, docCat]);
+  const missingForSubmit = cfg
+    ? [...["project_name", "summary", "funding_amount", "funding_currency", "funds_use", "owner_country", "owner_province", "owner_phone"].filter((k) => !form[k]), ...(modData.contact_name && modData.locality ? [] : ["contacto"])]
     : ["project_name", "category", "location", "summary", "project_state", "funding_amount", "funding_currency", "funds_use", "generates_income", "has_liens", "owner_country", "owner_relation"].filter((k) => !form[k]);
 
   // =============== RENDER ===============
@@ -278,8 +246,8 @@ const ApplicationFlow = ({ consult, initialModality = "activo" }: { consult: boo
           {mode === "new" && PYME_ENABLED && (
             <fieldset className="mb-5">
               <legend className="mb-2 text-sm font-medium text-foreground">¿Qué querés postular?</legend>
-              <div className="grid gap-2 sm:grid-cols-3">
-                {([["activo", "Un activo o proyecto"], ["produccion_pyme", "Un lote o producción PyME"], ["campos_industrias", "Un campo o industria"]] as const).map(([v, l]) => (
+              <div className="grid gap-2 sm:grid-cols-2">
+                {([["activo", "Un activo o proyecto"], ["produccion_pyme", "Un lote o producción PyME"], ["campos_industrias", "Un campo o industria"], ["desarrollos_fraccionados", "Un desarrollo inmobiliario u hotelero"]] as const).map(([v, l]) => (
                   <label key={v} className={`flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2.5 text-sm ${modality === v ? "border-[#0B2545] bg-[#EEF1F5] font-semibold text-[#0B2545]" : "border-border"}`}>
                     <input type="radio" name="modality" className="accent-[#0B2545]" checked={modality === v} onChange={() => setModality(v)} /> {l}
                   </label>
@@ -287,10 +255,8 @@ const ApplicationFlow = ({ consult, initialModality = "activo" }: { consult: boo
               </div>
             </fieldset>
           )}
-          {mode === "new" && modality === "produccion_pyme" ? (
-            <PymeStartForm onSubmit={startPyme} loading={loading} error={accessErr} />
-          ) : mode === "new" && modality === "campos_industrias" ? (
-            <GrandeStartForm onSubmit={startGrande} loading={loading} error={accessErr} />
+          {mode === "new" && MOD_CONFIG[modality] ? (
+            (() => { const SF = MOD_CONFIG[modality].StartForm; return <SF onSubmit={startModal} loading={loading} error={accessErr} />; })()
           ) : mode === "new" ? (
             <form onSubmit={startNew} className="space-y-4">
               <h2 className="text-2xl font-semibold text-[#0B2545]">Etapa 1 · Propietario o representante</h2>
@@ -377,7 +343,7 @@ const ApplicationFlow = ({ consult, initialModality = "activo" }: { consult: boo
         {!["cerrado", "no_elegible"].includes(status) && (
           <div className="rounded-2xl border border-border bg-white p-6 md:p-8">
             <h3 className="text-xl font-semibold text-[#0B2545]">Documentación</h3>
-            <DocPanel {...{ categories: isPymeApp ? PYME_DOC_CATEGORIES : isBigApp ? GRANDE_DOC_CATEGORIES : DOC_CATEGORIES, loaded, docCat, setDocCat, drag, setDrag, fileRef, addFiles, queue, setQueue, removeDoc, downloadDoc }} />
+            <DocPanel {...{ categories: cfg ? cfg.docCats : DOC_CATEGORIES, loaded, docCat, setDocCat, drag, setDrag, fileRef, addFiles, queue, setQueue, removeDoc, downloadDoc }} />
           </div>
         )}
         {error && <p role="alert" className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">{error}</p>}
@@ -389,95 +355,13 @@ const ApplicationFlow = ({ consult, initialModality = "activo" }: { consult: boo
   // ---------- borrador (4 etapas) ----------
   const go = async (n: number) => { if (await save(n)) { setStep(n); setError(null); window.scrollTo({ top: 0, behavior: "smooth" }); } };
 
-  if (isPymeApp || isBigApp) {
-    const PSTEPS = isBigApp
-      ? ["Datos iniciales", "Activo y titularidad", "Renta y contratos", "Cargas y estructura", "Documentación", "Revisión y envío"]
-      : ["Datos iniciales", "Empresa", "Lote y presupuesto", "Comercialización", "Documentación", "Revisión y envío"];
-    const docCats = isBigApp ? GRANDE_DOC_CATEGORIES : PYME_DOC_CATEGORIES;
-    const items: { cat: string; text: string; initial: boolean }[] = isBigApp ? GRANDE_CHECKLIST : PYME_CHECKLIST.filter((c) => !c.mode || !pyme.production_mode || pyme.production_mode === "mixta" || c.mode === pyme.production_mode);
+  if (cfg) {
     return (
-      <div className="space-y-6">
-        <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
-          <p className="text-muted-foreground">Expediente <span className="font-mono text-[#0B2545]">{app.expediente}</span> · {isBigApp ? "Campos e industrias" : "Producción PyME"} · Borrador</p>
-          <p role="status" className="text-muted-foreground">{saving === "saving" ? "Guardando…" : saving === "saved" ? "Borrador guardado" : saving === "error" ? "No se pudo guardar" : ""}</p>
-        </div>
-        <ol className="grid grid-cols-3 gap-2 md:grid-cols-6" aria-label="Etapas">
-          {PSTEPS.map((t, i) => (
-            <li key={t}><button type="button" onClick={() => go(i + 1)} aria-current={step === i + 1 ? "step" : undefined} className={`w-full rounded-lg border px-2 py-2 text-left text-xs font-semibold ${step === i + 1 ? "border-[#0B2545] bg-[#0B2545] text-white" : "border-border bg-white text-[#0B2545]"}`}>{i + 1}. {t}</button></li>
-          ))}
-        </ol>
-        <div className="rounded-2xl border border-border bg-white p-6 md:p-8">
-          {step <= 4 && (isBigApp ? <GrandeStep step={step} grande={grande} setGrande={setGrande} form={form} setF={setF} /> : <PymeStep step={step} pyme={pyme} setPyme={setPyme} form={form} setF={setF} />)}
-          {step === 5 && (
-            <div>
-              <h2 className="text-xl font-semibold text-[#0B2545]">Documentación privada</h2>
-              <p className="mt-2 text-sm text-muted-foreground">No necesitás tener todo para enviar la postulación. Subí lo que tengas y marcá lo que todavía no tenés. La documentación comercial no se publica.</p>
-              <ul className="mt-5 space-y-3">
-                {items.map((c, i) => {
-                  const k = String.fromCharCode(97 + i);
-                  const has = loaded.documents.some((d) => d.category === c.cat);
-                  return (
-                    <li key={c.text} className="rounded-lg border border-border p-3 text-sm">
-                      <div className="flex flex-wrap items-center justify-between gap-2">
-                        <span><strong>{c.text}</strong> <span className="text-muted-foreground">· {c.initial ? "inicial" : "complementaria"} · {docCats[c.cat]}</span></span>
-                        <label className="flex items-center gap-2 text-xs"><input type="checkbox" className="h-4 w-4 accent-[#0B2545]" checked={data[`nodoc_${k}`] === true} onChange={(e) => setData((d) => ({ ...d, [`nodoc_${k}`]: e.target.checked }))} /> Todavía no lo tengo</label>
-                      </div>
-                      {has && <p className="mt-1 text-xs text-green-800">Hay archivos cargados en esta categoría.</p>}
-                      {data[`nodoc_${k}`] === true && <input aria-label={`Explicá tu situación: ${c.text}`} placeholder="Contanos brevemente tu situación" className={`${field} mt-2`} value={String(data[`why_${k}`] ?? "")} onChange={(e) => setData((d) => ({ ...d, [`why_${k}`]: e.target.value }))} />}
-                    </li>
-                  );
-                })}
-              </ul>
-              <DocPanel {...{ categories: docCats, loaded, docCat, setDocCat, drag, setDrag, fileRef, addFiles, queue, setQueue, removeDoc, downloadDoc }} />
-            </div>
-          )}
-          {step === 6 && (
-            <div>
-              <h2 className="text-xl font-semibold text-[#0B2545]">Revisión y envío</h2>
-              <dl className="mt-4 divide-y divide-border rounded-lg border border-border text-sm">
-                {(isBigApp ? [
-                  ["Titular", `${form.owner_name} · ${grande.contact_name ?? "—"}`, 1], ["Contacto", `${form.owner_email} · ${form.owner_phone || "—"}`, 1],
-                  ["Activo", `${form.project_name || "—"} (${GRANDE_ASSET_KINDS[grande.asset_kind] ?? "—"})`, 1], ["Ubicación", `${grande.locality ?? "—"}, ${form.owner_province || "—"}`, 1],
-                  ["Financiación buscada", form.funding_amount ? `${form.funding_amount} ${form.funding_currency}` : "—", 1], ["Destino de fondos", form.funds_use || "—", 1],
-                  ["Cómo se explota hoy", GRANDE_OPERATION_MODES[grande.operation_mode] ?? "Sin indicar", 2], ["Renta declarada", grande.rent_amount ?? "—", 3],
-                  ["Participación a evaluar", GRANDE_INTEREST_MODES[grande.interest_mode] ?? "Sin indicar", 4], ["Documentos cargados", String(loaded.documents.length), 5],
-                ] : [
-                  ["Empresa", `${form.owner_name} · ${pyme.contact_name ?? "—"}`, 1], ["Contacto", `${form.owner_email} · ${form.owner_phone || "—"}`, 1],
-                  ["Producto", form.project_name || "—", 1], ["Ubicación", `${pyme.locality ?? "—"}, ${form.owner_province || "—"}`, 1],
-                  ["Financiación buscada", form.funding_amount ? `${form.funding_amount} ${form.funding_currency}` : "—", 1], ["Destino de fondos", form.funds_use || "—", 1],
-                  ["Forma de producción", PYME_PRODUCTION_MODES[pyme.production_mode] ?? "Sin indicar", 2], ["Lote", `${pyme.lot_id ?? "—"} · ${pyme.lot_volume ?? ""} ${pyme.lot_unit ?? ""}`, 3],
-                  ["Modalidad de interés", PYME_INTEREST_MODES[pyme.interest_mode] ?? "Sin indicar", 4], ["Documentos cargados", String(loaded.documents.length), 5],
-                ] as [string, string, number][]).map(([k, v, st]) => (
-                  <div key={k} className="flex items-start justify-between gap-3 p-3"><div><dt className="text-muted-foreground">{k}</dt><dd className="font-medium text-foreground">{v}</dd></div><button type="button" onClick={() => go(st)} className="text-xs font-semibold text-[#0B2545] underline">Editar</button></div>
-                ))}
-              </dl>
-              {missingForSubmit.length > 0 && <p role="alert" className="mt-4 rounded-lg border border-amber-600/40 bg-amber-50 p-3 text-sm text-amber-950">Faltan datos obligatorios en la etapa 1 para poder enviar.</p>}
-              <fieldset className="mt-6 space-y-3 text-sm">
-                <legend className="font-semibold text-[#0B2545]">Declaraciones obligatorias</legend>
-                <label className="flex items-start gap-3"><input type="checkbox" className="mt-1 h-4 w-4 accent-[#0B2545]" checked={decl.veracity} onChange={(e) => setDecl({ ...decl, veracity: e.target.checked })} /> Declaro que la información es veraz y que cuento con facultades para presentar {isBigApp ? "este activo" : "esta producción"} en nombre de su titular.</label>
-                <label className="flex items-start gap-3"><input type="checkbox" className="mt-1 h-4 w-4 accent-[#0B2545]" checked={decl.data_processing} onChange={(e) => setDecl({ ...decl, data_processing: e.target.checked })} /> Acepto el tratamiento de mis datos para evaluar la solicitud, según la <Link to="/tokenizate/privacidad" target="_blank" className="font-medium text-[#0B2545] underline">Política de Privacidad</Link>.</label>
-                <label className="flex items-start gap-3"><input type="checkbox" className="mt-1 h-4 w-4 accent-[#0B2545]" checked={decl.no_guarantee} onChange={(e) => setDecl({ ...decl, no_guarantee: e.target.checked })} /> Reconozco que presentar {isBigApp ? "el activo" : "la producción"} no garantiza aprobación, financiación ni emisión de tokens, y que Alba Capital no está obligada a estructurar{isBigApp ? "lo" : "la"} ni ofrecer{isBigApp ? "lo" : "la"} (ver <Link to="/tokenizate/bases-y-condiciones" target="_blank" className="font-medium text-[#0B2545] underline">Bases y Condiciones</Link>).</label>
-              </fieldset>
-              <label className="mt-4 flex items-start gap-3 text-sm text-muted-foreground"><input type="checkbox" className="mt-1 h-4 w-4 accent-[#0B2545]" checked={decl.marketing} onChange={(e) => setDecl({ ...decl, marketing: e.target.checked })} /> Quiero recibir comunicaciones comerciales de Alba Capital (opcional).</label>
-            </div>
-          )}
-          {error && <p role="alert" className="mt-5 rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">{error}</p>}
-          <div className="mt-8 flex flex-wrap items-center justify-between gap-3">
-            <div className="flex gap-3">
-              {step > 1 && <button type="button" className={btnSecondary} onClick={() => go(step - 1)}>Atrás</button>}
-              <button type="button" className={btnSecondary} onClick={() => save()}>Guardar borrador</button>
-            </div>
-            {step < 6 ? (
-              <button type="button" className={btnPrimary} onClick={() => go(step + 1)}>{step === 5 ? "Revisar" : "Continuar"}</button>
-            ) : (
-              <button type="button" className={btnPrimary} disabled={submitting || missingForSubmit.length > 0 || !decl.veracity || !decl.data_processing || !decl.no_guarantee} onClick={submit}>
-                {submitting && <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />} Enviar postulación
-              </button>
-            )}
-          </div>
-        </div>
-        <button type="button" className="text-sm font-medium text-[#0B2545] underline" onClick={exit}>Salir (mi borrador queda guardado; vuelvo con mi clave)</button>
-      </div>
+      <ModalDraft
+        cfg={cfg} expediente={app.expediente} form={form} setF={setF} mod={modData} setMod={setModData} documents={loaded.documents} data={data} setData={setData}
+        docProps={{ loaded, docCat, setDocCat, drag, setDrag, fileRef, addFiles, queue, setQueue, removeDoc, downloadDoc }}
+        decl={decl} setDecl={setDecl} step={step} go={go} save={() => save()} saving={saving} error={error} submitting={submitting} submit={submit} exit={exit} missing={missingForSubmit}
+      />
     );
   }
   return (

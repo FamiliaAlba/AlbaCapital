@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { tkApi } from "@/lib/tokenizate/api";
-import { ALL_DOC_CATEGORIES, CATEGORIES, EVAL_FIELDS, GRANDE_ASSET_KINDS, GRANDE_EVAL_FIELDS, GRANDE_INTEREST_MODES, GRANDE_OPERATION_MODES, MODALITY_LABEL, PROJECT_STATES, PYME_EVAL_FIELDS, PYME_INTEREST_MODES, PYME_PRODUCTION_MODES, RELATIONS, STATUS_LABEL, statusLabel } from "@/data/tokenizate";
+import { ALL_DOC_CATEGORIES, CATEGORIES, EVAL_FIELDS, DESARROLLO_EVAL_FIELDS, DESARROLLO_INTEREST_MODES, DESARROLLO_KINDS, GRANDE_ASSET_KINDS, GRANDE_EVAL_FIELDS, GRANDE_INTEREST_MODES, GRANDE_OPERATION_MODES, MODALITY_LABEL, PROJECT_STATES, PYME_EVAL_FIELDS, PYME_INTEREST_MODES, PYME_PRODUCTION_MODES, RELATIONS, STATUS_LABEL, statusLabel } from "@/data/tokenizate";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 const select = "h-10 rounded-md border border-input bg-background px-3 text-sm";
@@ -59,7 +59,8 @@ const AdminTokenizateApp = () => {
   const a = d.application;
   const isPyme = a.modality === "produccion_pyme";
   const isBig = a.modality === "campos_industrias";
-  const py = ((isBig ? a.grande : a.pyme) ?? {}) as Record<string, any>;
+  const isDev = a.modality === "desarrollos_fraccionados";
+  const py = ((isDev ? a.desarrollo : isBig ? a.grande : a.pyme) ?? {}) as Record<string, any>;
   const stateOf = (k: string) => ({ comprobado: "comprobado", estimado: "estimación", no_tengo: "todavía no lo tiene", orientacion: "necesita orientación" } as Record<string, string>)[py._state?.[k] ?? ""] ?? "";
   const pyRow = (k: string, l: string) => row(l, py[k] ? <span className="whitespace-pre-wrap">{py[k]}{stateOf(k) ? <em className="ml-2 text-xs text-muted-foreground">({stateOf(k)})</em> : null}</span> : null);
   const row = (k: string, v: any) => <div className="grid gap-1 py-2 sm:grid-cols-[12rem_1fr]"><dt className="text-sm text-muted-foreground">{k}</dt><dd className="text-sm">{v ?? "—"}</dd></div>;
@@ -96,6 +97,22 @@ const AdminTokenizateApp = () => {
           </dl>
           {Object.keys(a.data ?? {}).length > 0 && <div className="mt-3 text-xs text-muted-foreground"><p className="font-medium text-foreground">Documentación que el postulante indicó no tener todavía:</p>{Object.entries(a.data).filter(([k, v]) => k.startsWith("why_") && v).map(([k, v]) => <p key={k}>• {String(v)}</p>)}</div>}
         </section>
+
+        {isDev && (
+          <section className="rounded-xl border border-border bg-background p-5 xl:col-span-2">
+            <h2 className="mb-2 text-lg font-light">Desarrollos fraccionados · datos informados</h2>
+            <p className="mb-2 text-xs text-muted-foreground">Lo que figura entre paréntesis indica si el postulante lo marcó como dato comprobado, estimación o faltante.</p>
+            <dl className="grid divide-y divide-border md:grid-cols-2 md:gap-x-8 md:divide-y-0">
+              {row("Tipo de desarrollo", DESARROLLO_KINDS[py.project_kind])}{pyRow("contact_name", "Contacto")}{pyRow("contact_role", "Función")}{pyRow("locality", "Localidad")}
+              {pyRow("cuit", "CUIT")}{pyRow("developer_track", "Antecedentes del desarrollador")}{pyRow("land_title", "Titularidad del terreno")}{pyRow("land_status", "Estado del terreno y zonificación")}
+              {pyRow("units_total", "Unidades")}{pyRow("unit_model", "Cómo se fraccionaría")}{pyRow("total_budget", "Presupuesto total")}{pyRow("financing_structure", "Financiamiento del proyecto")}
+              {pyRow("schedule", "Cronograma")}{pyRow("permits", "Permisos y habilitaciones")}{pyRow("operator", "Operador previsto")}{pyRow("operator_term", "Plazo con el operador")}
+              {pyRow("revenue_model", "Cómo se genera la renta")}{pyRow("revenue_projection", "Proyección de renta (estimación)")}{pyRow("market_study", "Estudio de mercado")}{pyRow("operating_costs", "Costos operativos y comisiones")}
+              {pyRow("insurance", "Seguros")}{pyRow("trustee_info", "Estructura o fiduciario previstos")}{pyRow("exit_options", "Salida o reventa prevista")}{pyRow("risks", "Riesgos")}
+              {row("Participación a evaluar", DESARROLLO_INTEREST_MODES[py.interest_mode])}{pyRow("structure_notes", "Ideas sobre la estructura")}
+            </dl>
+          </section>
+        )}
 
         {isBig && (
           <section className="rounded-xl border border-border bg-background p-5 xl:col-span-2">
@@ -156,7 +173,7 @@ const AdminTokenizateApp = () => {
           <h2 className="mb-1 text-lg font-light">Ficha interna de evaluación</h2>
           <p className="mb-4 text-xs text-muted-foreground">Registro cualitativo del equipo. No genera puntajes, probabilidades ni aprobaciones automáticas.</p>
           <div className="grid gap-4 md:grid-cols-2">
-            {(isBig ? GRANDE_EVAL_FIELDS : isPyme ? PYME_EVAL_FIELDS : EVAL_FIELDS).map((f) => (<label key={f.key} className="text-sm">{f.label}<Textarea rows={3} className="mt-1" value={evalF[f.key] ?? ""} onChange={(e) => setEvalF({ ...evalF, [f.key]: e.target.value })} /></label>))}
+            {(isDev ? DESARROLLO_EVAL_FIELDS : isBig ? GRANDE_EVAL_FIELDS : isPyme ? PYME_EVAL_FIELDS : EVAL_FIELDS).map((f) => (<label key={f.key} className="text-sm">{f.label}<Textarea rows={3} className="mt-1" value={evalF[f.key] ?? ""} onChange={(e) => setEvalF({ ...evalF, [f.key]: e.target.value })} /></label>))}
           </div>
           <h3 className="mb-2 mt-5 text-sm font-medium">Honorarios (registro interno, no se publican)</h3>
           {fees.map((f, i) => (

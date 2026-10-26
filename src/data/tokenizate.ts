@@ -36,6 +36,7 @@ export const CATEGORIES: Record<string, string> = {
   proyecto_productivo: "Proyecto productivo",
   lote_pyme: "Lote o producción PyME",
   campo_industria: "Campo o industria",
+  desarrollo: "Desarrollo inmobiliario u hotelero",
   otro: "Otro activo",
 };
 
@@ -146,9 +147,9 @@ export const PYME_STATUS_LABEL: Record<string, string> = {
   cerrado: "Archivada",
 };
 export const statusLabel = (status: string, modality?: string): string =>
-  (modality === "produccion_pyme" || modality === "campos_industrias" ? PYME_STATUS_LABEL : STATUS_LABEL)[status] ?? status;
+  (modality && modality !== "activo" ? PYME_STATUS_LABEL : STATUS_LABEL)[status] ?? status;
 
-export const MODALITY_LABEL: Record<string, string> = { activo: "Activo o proyecto", produccion_pyme: "Producción PyME", campos_industrias: "Campos e industrias" };
+export const MODALITY_LABEL: Record<string, string> = { activo: "Activo o proyecto", produccion_pyme: "Producción PyME", campos_industrias: "Campos e industrias", desarrollos_fraccionados: "Desarrollos fraccionados" };
 
 export const PYME_DOC_CATEGORIES: Record<string, string> = {
   identidad_empresarial: "Identidad empresarial y representación",
@@ -161,6 +162,18 @@ export const PYME_DOC_CATEGORIES: Record<string, string> = {
   cronograma_flujo: "Cronograma y flujo de fondos",
   fotografias: "Fotografías",
   seguros_respaldos: "Seguros y otros respaldos",
+};
+export const DESARROLLO_DOC_CATEGORIES: Record<string, string> = {
+  titularidad: "Titularidad del terreno",
+  proyecto_planos: "Proyecto y planos",
+  habilitaciones: "Permisos y habilitaciones",
+  presupuesto_obra: "Presupuesto de obra y cronograma",
+  estudio_mercado: "Estudio de mercado y proyecciones",
+  contrato_operador: "Contrato con el operador o franquicia",
+  antecedentes_desarrollador: "Antecedentes del desarrollador",
+  seguros_respaldos: "Seguros y otros respaldos",
+  fotografias: "Fotografías y renders",
+  identidad_empresarial: "Identidad y representación",
 };
 export const GRANDE_DOC_CATEGORIES: Record<string, string> = {
   titularidad: "Titularidad y situación registral",
@@ -175,7 +188,7 @@ export const GRANDE_DOC_CATEGORIES: Record<string, string> = {
   identidad_empresarial: "Identidad y representación",
 };
 /** Nombre legible de cualquier categoría de documento, de cualquier modalidad. */
-export const ALL_DOC_CATEGORIES: Record<string, string> = { ...DOC_CATEGORIES, ...PYME_DOC_CATEGORIES, ...GRANDE_DOC_CATEGORIES };
+export const ALL_DOC_CATEGORIES: Record<string, string> = { ...DOC_CATEGORIES, ...PYME_DOC_CATEGORIES, ...GRANDE_DOC_CATEGORIES, ...DESARROLLO_DOC_CATEGORIES };
 
 export const PYME_CHECKLIST: { cat: string; text: string; initial: boolean; mode?: "propia" | "tercerizada" | "mixta" }[] = [
   { cat: "identidad_empresarial", text: "Constancia de CUIT y datos de la empresa", initial: true },
@@ -257,3 +270,48 @@ export const GRANDE_EVAL_FIELDS: { key: string; label: string }[] = [
   { key: "g_escenario_base", label: "Escenario base (con supuestos explícitos)" },
   { key: "g_escenario_favorable", label: "Escenario favorable (con supuestos explícitos)" },
 ];
+
+export const DESARROLLO_KINDS: Record<string, string> = {
+  hotel_condo: "Hotel o condo-hotel",
+  residencial: "Residencial",
+  cocheras: "Cocheras o estacionamientos",
+  comercial_oficinas: "Comercial u oficinas",
+  mixto: "Proyecto mixto",
+};
+export const DESARROLLO_INTEREST_MODES: Record<string, string> = {
+  unidades_renta_compartida: "Unidades o fracciones con renta compartida",
+  participacion_economica: "Participación económica en el desarrollo",
+  asesoramiento: "Necesito asesoramiento para definirlo",
+};
+export const DESARROLLO_CHECKLIST: { cat: string; text: string; initial: boolean }[] = [
+  { cat: "titularidad", text: "Título del terreno e informe de dominio", initial: true },
+  { cat: "proyecto_planos", text: "Anteproyecto o proyecto y planos", initial: true },
+  { cat: "habilitaciones", text: "Permisos de obra y habilitaciones (o estado del trámite)", initial: false },
+  { cat: "presupuesto_obra", text: "Presupuesto de obra y cronograma", initial: true },
+  { cat: "estudio_mercado", text: "Estudio de mercado y proyecciones con sus supuestos", initial: false },
+  { cat: "contrato_operador", text: "Contrato o preacuerdo con el operador, gerenciadora o franquicia", initial: false },
+  { cat: "antecedentes_desarrollador", text: "Antecedentes de desarrollos anteriores", initial: true },
+  { cat: "seguros_respaldos", text: "Seguros de obra y otros respaldos", initial: false },
+  { cat: "identidad_empresarial", text: "Identidad de la sociedad y representación", initial: true },
+  { cat: "fotografias", text: "Fotografías, renders o maqueta", initial: false },
+];
+export const DESARROLLO_EVAL_FIELDS: { key: string; label: string }[] = [
+  { key: "d_terreno", label: "Titularidad y situación del terreno" },
+  { key: "d_desarrollador", label: "Capacidad y antecedentes del desarrollador" },
+  { key: "d_permisos", label: "Permisos y estado de obra" },
+  { key: "d_presupuesto", label: "Presupuesto, cronograma y riesgo de sobrecostos" },
+  { key: "d_mercado", label: "Estudio de mercado y supuestos de renta" },
+  { key: "d_operador", label: "Operador, contrato y plazo" },
+  { key: "d_estructura", label: "Estructura prevista: fiduciario, vehículo y derechos de los participantes" },
+  { key: "d_encuadre", label: "Encuadre regulatorio (oferta pública o privada, participantes, autorizaciones)" },
+  { key: "d_impuestos", label: "Tratamiento impositivo" },
+  { key: "d_salida", label: "Salida o reventa de las participaciones" },
+  { key: "d_riesgos", label: "Riesgos principales (demoras, ocupación, costos, mercado)" },
+  { key: "d_recomendacion", label: "Recomendación del equipo" },
+  { key: "d_escenario_conservador", label: "Escenario conservador (con supuestos explícitos)" },
+  { key: "d_escenario_base", label: "Escenario base (con supuestos explícitos)" },
+  { key: "d_escenario_favorable", label: "Escenario favorable (con supuestos explícitos)" },
+];
+
+/** Columna jsonb de cada modalidad con campos propios. */
+export const MODALITY_COL: Record<string, string> = { produccion_pyme: "pyme", campos_industrias: "grande", desarrollos_fraccionados: "desarrollo" };
