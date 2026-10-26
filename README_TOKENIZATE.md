@@ -59,4 +59,4 @@ Cuarta modalidad, para desarrollos inmobiliarios y hoteleros (hotel o condo-hote
 
 Datos: `modality = 'desarrollos_fraccionados'`, campos propios en `tk_applications.desarrollo` (migración aditiva `20261028000000_tokenizate_desarrollos.sql`, ya aplicada). Las tres modalidades con campos propios comparten una configuración (`src/components/tokenizate/modalities.tsx`, `ModalDraft.tsx`) y, en el servidor, `MOD_SPECS`: sumar una nueva es agregar una entrada, su formulario y su columna.
 
-No se copió texto, diseño, marca ni contratos de terceros. El informe comparativo sobre Argenway está en un documento privado aparte (no en este repositorio).
+No se copió texto, diseño, marca ni contratos de terceros.
