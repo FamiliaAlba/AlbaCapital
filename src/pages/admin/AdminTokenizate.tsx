@@ -6,10 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { tkApi } from "@/lib/tokenizate/api";
-import { CATEGORIES, STATUS_LABEL } from "@/data/tokenizate";
+import { CATEGORIES, STATUS_LABEL, statusLabel } from "@/data/tokenizate";
+import { PYME_ENABLED } from "@/lib/tokenizate/backend";
 
 interface Interested { id: string; created_at: string; name: string; email: string; phone: string | null; country: string; asset_type: string; capital_range: string | null; status: string; marketing_consent: boolean }
-interface AppRow { id: string; expediente: string; status: string; owner_name: string; owner_email: string; owner_country: string | null; category: string | null; project_name: string | null; funding_amount: number | null; funding_currency: string | null; submitted_at: string | null; updated_at: string }
+interface AppRow { id: string; expediente: string; status: string; modality?: string; next_action?: string | null; next_action_at?: string | null; pyme?: Record<string, string>; owner_name: string; owner_email: string; owner_country: string | null; category: string | null; project_name: string | null; funding_amount: number | null; funding_currency: string | null; submitted_at: string | null; updated_at: string }
 
 const select = "h-10 rounded-md border border-input bg-background px-3 text-sm";
 
@@ -18,6 +19,7 @@ const AdminTokenizate = () => {
   const [tab, setTab] = useState<"apps" | "interested">("apps");
   const [q, setQ] = useState("");
   const [status, setStatus] = useState("");
+  const [modality, setModality] = useState("");
   const [apps, setApps] = useState<AppRow[]>([]);
   const [people, setPeople] = useState<Interested[]>([]);
   const [overview, setOverview] = useState<Record<string, number> | null>(null);
@@ -31,7 +33,7 @@ const AdminTokenizate = () => {
       const [o, s] = await Promise.all([tkApi("admin_overview", {}, { admin: true }), tkApi("admin_settings_get", {}, { admin: true })]);
       setOverview(o);
       setLimits(s.settings);
-      if (tab === "apps") setApps((await tkApi("admin_list_apps", { q, status }, { admin: true })).items);
+      if (tab === "apps") setApps((await tkApi("admin_list_apps", { q, status, modality }, { admin: true })).items);
       else setPeople((await tkApi("admin_list_interested", { q, status }, { admin: true })).items);
       setError(null);
     } catch (e) {
@@ -39,7 +41,7 @@ const AdminTokenizate = () => {
     } finally {
       setLoading(false);
     }
-  }, [tab, q, status]);
+  }, [tab, q, status, modality]);
 
   useEffect(() => {
     const t = setTimeout(load, 250);
@@ -102,6 +104,13 @@ const AdminTokenizate = () => {
           ))}
         </div>
         <Input placeholder="Buscar…" value={q} onChange={(e) => setQ(e.target.value)} className="max-w-xs" aria-label="Buscar" />
+        {tab === "apps" && PYME_ENABLED && (
+          <select className={select} value={modality} onChange={(e) => setModality(e.target.value)} aria-label="Filtrar por modalidad">
+            <option value="">Todas las modalidades</option>
+            <option value="activo">Activos y proyectos</option>
+            <option value="produccion_pyme">Producción PyME</option>
+          </select>
+        )}
         <select className={select} value={status} onChange={(e) => setStatus(e.target.value)} aria-label="Filtrar por estado">
           <option value="">Todos los estados</option>
           {tab === "apps" ? Object.entries(STATUS_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>) : ["nuevo", "contactado", "cerrado"].map((s) => <option key={s} value={s}>{s}</option>)}
@@ -115,16 +124,17 @@ const AdminTokenizate = () => {
       {!loading && tab === "apps" && (
         <div className="overflow-x-auto rounded-xl border border-border bg-background">
           <table className="w-full min-w-[48rem] text-left text-sm">
-            <thead><tr className="border-b border-border text-xs text-muted-foreground"><th className="p-3 font-normal">Expediente</th><th className="p-3 font-normal">Postulante</th><th className="p-3 font-normal">Proyecto</th><th className="p-3 font-normal">Financiación</th><th className="p-3 font-normal">Estado</th><th className="p-3 font-normal">Actualizado</th></tr></thead>
+            <thead><tr className="border-b border-border text-xs text-muted-foreground"><th className="p-3 font-normal">Expediente</th><th className="p-3 font-normal">Postulante</th><th className="p-3 font-normal">Proyecto</th><th className="p-3 font-normal">Financiación</th><th className="p-3 font-normal">Estado</th><th className="p-3 font-normal">Próxima acción</th><th className="p-3 font-normal">Actualizado</th></tr></thead>
             <tbody>
-              {apps.length === 0 && <tr><td colSpan={6} className="p-6 text-center text-muted-foreground">Sin resultados.</td></tr>}
+              {apps.length === 0 && <tr><td colSpan={7} className="p-6 text-center text-muted-foreground">Sin resultados.</td></tr>}
               {apps.map((a) => (
                 <tr key={a.id} className="border-b border-border/50">
                   <td className="p-3"><Link className="font-mono underline" to={`/admin/tokenizate/${a.id}`}>{a.expediente}</Link></td>
                   <td className="p-3">{a.owner_name}<br /><span className="text-xs text-muted-foreground">{a.owner_email}</span></td>
-                  <td className="p-3">{a.project_name ?? "—"}<br /><span className="text-xs text-muted-foreground">{a.category ? CATEGORIES[a.category] : ""}</span></td>
+                  <td className="p-3">{a.project_name ?? "—"}<br /><span className="text-xs text-muted-foreground">{a.modality === "produccion_pyme" ? `Producción PyME${a.pyme?.lot_volume ? ` · ${a.pyme.lot_volume} ${a.pyme.lot_unit ?? ""}` : ""}` : a.category ? CATEGORIES[a.category] : ""}</span></td>
                   <td className="p-3">{a.funding_amount ? `${a.funding_amount.toLocaleString("es-AR")} ${a.funding_currency ?? ""}` : "—"}</td>
-                  <td className="p-3">{STATUS_LABEL[a.status] ?? a.status}</td>
+                  <td className="p-3">{statusLabel(a.status, a.modality)}</td>
+                  <td className="p-3 text-xs">{a.next_action ?? "—"}{a.next_action_at ? <><br /><span className="text-muted-foreground">{new Date(a.next_action_at).toLocaleDateString("es-AR")}</span></> : null}</td>
                   <td className="p-3 text-xs text-muted-foreground">{new Date(a.updated_at).toLocaleString("es-AR")}</td>
                 </tr>
               ))}

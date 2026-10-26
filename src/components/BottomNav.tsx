@@ -41,7 +41,7 @@ const BottomNav = () => {
                 >
                   <Icon className="h-[18px] w-[18px]" strokeWidth={active ? 2.2 : 1.6} />
                 </span>
-                <span className="max-w-full truncate">{t(key)}</span>
+                <span className="max-w-full whitespace-nowrap">{t(key)}</span>
               </NavLink>
             </li>
           );

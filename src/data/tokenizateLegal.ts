@@ -1,4 +1,5 @@
 import { TK_LEGAL_VERSION } from "./tokenizate";
+import { PYME_ENABLED } from "@/lib/tokenizate/backend";
 
 export interface LegalSection {
   title: string;
@@ -19,7 +20,7 @@ export interface LegalDoc {
  */
 export const LEGAL_REVIEWED_ON = "16 de octubre de 2026";
 
-export const BASES_Y_CONDICIONES: LegalDoc = {
+const BASES_BASE: LegalDoc = {
   title: "Bases y Condiciones de Tokenizate | Alba Capital",
   intro: `Versión ${TK_LEGAL_VERSION}. Estas Bases y Condiciones regulan el uso de la sección Tokenizate, el registro de interés de potenciales inversores y la postulación de activos o proyectos por parte de sus propietarios o desarrolladores.`,
   sections: [
@@ -139,7 +140,7 @@ export const BASES_Y_CONDICIONES: LegalDoc = {
   ],
 };
 
-export const POLITICA_PRIVACIDAD: LegalDoc = {
+const PRIVACIDAD_BASE: LegalDoc = {
   title: "Política de Privacidad de Tokenizate | Alba Capital",
   intro: `Versión ${TK_LEGAL_VERSION}. Explica qué datos personales tratamos en la sección Tokenizate, para qué, cuánto tiempo y qué derechos tenés, conforme a la Ley 25.326 de Protección de los Datos Personales y su normativa complementaria.`,
   sections: [
@@ -221,3 +222,39 @@ export const POLITICA_PRIVACIDAD: LegalDoc = {
     },
   ],
 };
+
+/** Cláusulas adicionales de Producción PyME (solo cuando el módulo está habilitado). */
+const PYME_TERMS: LegalSection[] = [
+  {
+    title: "Producción PyME: alcance",
+    paragraphs: [
+      "La modalidad Producción PyME permite presentar un lote, partida, campaña u orden de fabricación identificable para que Alba Capital evalúe si existe una estructura adecuada de financiación. Postular no garantiza financiación, emisión de tokens ni la apertura de ninguna oferta, y no obliga a Alba Capital a estructurar el proyecto, ofrecerlo o dar curso a la propuesta.",
+      "Las dos modalidades descritas en el sitio (producción con entrega de producto y participación económica en un proyecto productivo) son opciones de interés y de evaluación. No constituyen ofertas, no habilitan contratación, cobros ni emisión, y no implican canje indistinto por dinero o mercadería salvo que un contrato futuro lo establezca expresamente.",
+    ],
+  },
+  {
+    title: "Producción PyME: información y condiciones previas",
+    items: [
+      "Quien postula debe distinguir los datos comprobados de las estimaciones y puede indicar “todavía no lo tengo” o “necesito orientación”. Una estimación no es una promesa.",
+      "Antes de cualquier eventual operación deberán definirse, entre otros, quién administra los fondos, los usos permitidos, cómo se documentan los desembolsos y qué ocurre ante financiación insuficiente, demoras, sobrecostos, pérdida de mercadería, ventas parciales y cierre anticipado.",
+      "Un fideicomiso u otra estructura es una alternativa a evaluar caso por caso; no se afirma que exista ni que elimine el riesgo comercial. Alba Capital no presta por este medio servicios de custodia, intermediación, fiduciario ni plataforma autorizada.",
+      "Los costos de estructuración pueden resultar desproporcionados para lotes pequeños: Alba Capital puede recomendar un esquema repetible, una alternativa de preventa o posponer el proyecto.",
+      "Los casos y ejemplos mostrados son ilustrativos, no son oportunidades de inversión disponibles y no implican resultados.",
+    ],
+  },
+];
+const PYME_PRIVACY_ITEM =
+  "Si postulás una producción PyME: datos de la empresa y de contacto, del producto y del lote, presupuesto, costos, ventas, clientes, pedidos y la documentación comercial que adjuntes. No se publican automáticamente ni se envían a servicios externos de inteligencia artificial.";
+
+export const BASES_Y_CONDICIONES: LegalDoc = PYME_ENABLED
+  ? { ...BASES_BASE, sections: [...BASES_BASE.sections.slice(0, 4), ...PYME_TERMS, ...BASES_BASE.sections.slice(4)] }
+  : BASES_BASE;
+
+export const POLITICA_PRIVACIDAD: LegalDoc = PYME_ENABLED
+  ? {
+      ...PRIVACIDAD_BASE,
+      sections: PRIVACIDAD_BASE.sections.map((sec) =>
+        sec.title === "2. Qué datos tratamos" && sec.items ? { ...sec, items: [...sec.items.slice(0, 2), PYME_PRIVACY_ITEM, ...sec.items.slice(2)] } : sec,
+      ),
+    }
+  : PRIVACIDAD_BASE;

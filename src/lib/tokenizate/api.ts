@@ -1,6 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
+import { TK_FUNCTION } from "./backend";
 
-const FN_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/tokenizate`;
+const FN_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/${TK_FUNCTION}`;
 
 export class TkApiError extends Error {
   constructor(

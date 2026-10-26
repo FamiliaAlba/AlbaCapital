@@ -7,7 +7,7 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 import { SMTPClient } from "https://deno.land/x/denomailer@1.6.0/mod.ts";
 
 const BUCKET = "tokenizate-docs";
-const LEGAL_VERSION = "2026-10-16.2"; // versión vigente de Política de Privacidad y Bases y Condiciones
+const LEGAL_VERSION = "2026-10-26"; // versión vigente de Política de Privacidad y Bases y Condiciones
 const ORIGINS = [
   "https://alba-capital.vercel.app",
   "https://albacapital.com",
@@ -15,11 +15,33 @@ const ORIGINS = [
   "http://localhost:8080",
   "http://127.0.0.1:8080",
 ];
-const STATUSES = ["borrador", "recibido", "revision_preliminar", "documentacion_pendiente", "analisis_tecnico_financiero", "analisis_juridico", "viable_con_condiciones", "no_elegible", "cerrado"];
-const CATEGORIES = ["inmueble_residencial", "hotel_turistico", "maquinaria", "infraestructura_productiva", "proyecto_productivo", "otro"];
-const DOC_CATEGORIES = ["titularidad", "tecnica", "valuacion", "ingresos_costos", "plan_negocios", "contratos", "permisos_seguros", "fotografias", "otros"];
+const STATUSES = ["borrador", "recibido", "revision_preliminar", "documentacion_pendiente", "analisis_tecnico_financiero", "analisis_juridico", "viable_con_condiciones", "propuesta_estructuracion", "no_elegible", "cerrado"];
+const CATEGORIES = ["inmueble_residencial", "hotel_turistico", "maquinaria", "infraestructura_productiva", "proyecto_productivo", "lote_pyme", "otro"];
+const DOC_CATEGORIES = ["titularidad", "tecnica", "valuacion", "ingresos_costos", "plan_negocios", "contratos", "permisos_seguros", "fotografias", "otros",
+  "identidad_empresarial", "presupuesto_cotizaciones", "tecnica_producto", "habilitaciones", "capacidad_produccion", "antecedentes_ventas", "pedidos_ordenes", "cronograma_flujo", "seguros_respaldos"];
 const RELATIONS = ["propietario", "representante", "empresa_titular"];
 const STATES = ["operativo", "ampliacion", "desarrollo", "otro"];
+const MODALITIES = ["activo", "produccion_pyme"];
+// Campos de la postulación "Producción PyME" (se guardan en tk_applications.pyme). Longitud máxima por campo.
+const PYME_TEXT: Record<string, number> = {
+  contact_name: 160, contact_role: 120, locality: 120, cuit: 30, representation: 600, experience: 1500, capacity: 1500, maker_info: 1000,
+  lot_id: 200, lot_volume: 60, lot_unit: 40, current_stage: 300, schedule: 1500, budget: 3000, own_contribution: 600, other_funding: 600,
+  sales_history: 1500, orders_buyers: 1500, price_estimate: 300, price_basis: 1000, distribution_costs: 1000, risks: 2000, insurance: 800,
+};
+const PYME_ENUMS: Record<string, string[]> = { production_mode: ["propia", "tercerizada", "mixta"], interest_mode: ["entrega_producto", "participacion_economica", "asesoramiento"] };
+const PYME_STATES = ["comprobado", "estimado", "no_tengo", "orientacion"];
+function cleanPyme(input: unknown): Body {
+  const src = (input && typeof input === "object" ? input : {}) as Body;
+  const out: Body = {};
+  for (const [k, max] of Object.entries(PYME_TEXT)) if (typeof src[k] === "string" && src[k].trim()) out[k] = src[k].trim().slice(0, max);
+  for (const [k, list] of Object.entries(PYME_ENUMS)) if (typeof src[k] === "string" && list.includes(src[k])) out[k] = src[k];
+  const st: Body = {};
+  const states = (src._state && typeof src._state === "object" ? src._state : {}) as Body;
+  for (const [k, v] of Object.entries(states)) if ((k in PYME_TEXT || k in PYME_ENUMS) && typeof v === "string" && PYME_STATES.includes(v)) st[k] = v;
+  if (Object.keys(st).length) out._state = st;
+  return out;
+}
+
 const MIME_EXT: Record<string, string[]> = { "application/pdf": ["pdf"], "image/jpeg": ["jpg", "jpeg"], "image/png": ["png"] };
 
 const SITE = (Deno.env.get("SITE_URL") ?? "https://alba-capital.vercel.app").replace(/\/+$/, "");
@@ -103,13 +125,13 @@ function requireLegal(body: Body, ...keys: string[]) {
 }
 
 const APP_PUBLIC_COLS =
-  "id, expediente, status, stage, owner_name, owner_email, owner_phone, owner_country, owner_province, owner_relation, owner_tax_id, project_name, category, location, summary, project_state, value_amount, value_currency, funding_amount, funding_currency, funds_use, generates_income, has_liens, liens_detail, data, declarations, submitted_at, email_status, created_at, updated_at";
+  "id, expediente, status, stage, owner_name, owner_email, owner_phone, owner_country, owner_province, owner_relation, owner_tax_id, project_name, category, location, summary, project_state, value_amount, value_currency, funding_amount, funding_currency, funds_use, generates_income, has_liens, liens_detail, data, declarations, submitted_at, email_status, created_at, updated_at, modality, pyme";
 
 async function authOwner(req: Request, body: Body) {
   const ip = await ipKey(req);
   const exp = str(body.expediente, 30).toUpperCase();
   const key = normKey(body.accessKey);
-  const { data: app } = await db.from("tk_applications").select("id, expediente, status, access_hash, owner_email").eq("expediente", exp).maybeSingle();
+  const { data: app } = await db.from("tk_applications").select("id, expediente, status, access_hash, owner_email, modality").eq("expediente", exp).maybeSingle();
   const ok = !!app && key.length >= 16 && safeEq(await sha256(key), app.access_hash);
   if (!ok) {
     await rate(ip, "auth_fail", 10, 900);
@@ -175,22 +197,37 @@ async function handle(action: string, body: Body, req: Request): Promise<unknown
       if (body.website) return { ok: true };
       requireLegal(body, "terms", "privacy");
       const o = body.owner ?? {};
+      const modality = oneOf(body.modality, MODALITIES) ?? "activo";
       const email = str(o.email, 255).toLowerCase();
       const name = str(o.name, 160);
       if (name.length < 2 || !EMAIL.test(email)) throw new HttpError(400, "Revisá el nombre y el correo.");
-      const relation = oneOf(o.relation, RELATIONS);
+      const relation = oneOf(o.relation, RELATIONS) ?? (modality === "produccion_pyme" ? "empresa_titular" : null);
       if (!relation) throw new HttpError(400, "Indicá tu relación con el activo.");
+      const extra: Body = {};
+      if (modality === "produccion_pyme") {
+        // Primer paso corto: datos de contacto y del proyecto productivo.
+        const py = cleanPyme(body.pyme);
+        const prod = str(body.product, 160);
+        const summary = str(body.summary, 3000);
+        const amount = num(body.fundingAmount);
+        const currency = oneOf(body.fundingCurrency, ["ARS", "USD"]);
+        const use = str(body.fundsUse, 2000);
+        const province = str(o.province, 80);
+        if (!py.contact_name || !str(o.phone, 40) || !province || !py.locality || prod.length < 2 || summary.length < 10 || !amount || !currency || use.length < 3) throw new HttpError(400, "Completá los datos obligatorios del primer paso.");
+        Object.assign(extra, { modality, pyme: py, category: "lote_pyme", project_name: prod, summary, location: `${py.locality}, ${province}`, funding_amount: amount, funding_currency: currency, funds_use: use });
+      }
       await rate(await ipKey(req), "app_start", 5, 3600);
       const key = genKey();
       const now = new Date().toISOString();
       const { data, error } = await db.from("tk_applications").insert({
         access_hash: await sha256(normKey(key)), owner_name: name, owner_email: email, owner_phone: opt(o.phone, 40),
-        owner_country: opt(o.country, 80), owner_province: opt(o.province, 80), owner_relation: relation,
+        owner_country: opt(o.country, 80) ?? (modality === "produccion_pyme" ? "Argentina" : null), owner_province: opt(o.province, 80), owner_relation: relation,
         terms_version: LEGAL_VERSION, privacy_version: LEGAL_VERSION,
         declarations: { terms_accepted_at: now, privacy_accepted_at: now },
+        ...extra,
       }).select("id, expediente").single();
       if (error) throw new HttpError(400, "No pudimos crear el expediente. Revisá los datos.");
-      await ev({ app: data.id, actor: "owner", action: "created" });
+      await ev({ app: data.id, actor: "owner", action: "created", detail: { modality } });
       return { expediente: data.expediente, accessKey: key };
     }
 
@@ -234,7 +271,8 @@ async function handle(action: string, body: Body, req: Request): Promise<unknown
         for (const [k, v] of Object.entries(body.data as Body).slice(0, 40)) if (/^[a-z_]{1,40}$/.test(k)) d[k] = typeof v === "string" ? v.slice(0, 1000) : typeof v === "boolean" ? v : null;
         put("data", d);
       }
-      if (Number.isInteger(body.stage) && body.stage >= 1 && body.stage <= 4) put("stage", body.stage);
+      if (body.pyme && typeof body.pyme === "object" && a.modality === "produccion_pyme") put("pyme", cleanPyme(body.pyme));
+      if (Number.isInteger(body.stage) && body.stage >= 1 && body.stage <= 6) put("stage", body.stage);
       if (Object.keys(patch).length === 0) return { ok: true };
       const { error } = await db.from("tk_applications").update(patch).eq("id", a.id);
       if (error) throw new HttpError(400, "No se pudo guardar. Revisá los datos.");
@@ -319,7 +357,12 @@ async function handle(action: string, body: Body, req: Request): Promise<unknown
       const a = await authOwner(req, body);
       if (a.status !== "borrador") throw new HttpError(409, "La postulación ya fue enviada.");
       const { data: app } = await db.from("tk_applications").select("*").eq("id", a.id).single();
-      const missing = ["project_name", "category", "location", "summary", "project_state", "funding_amount", "funding_currency", "funds_use", "generates_income", "has_liens", "owner_country", "owner_relation"].filter((k) => app[k] === null || app[k] === "");
+      const isPyme = app.modality === "produccion_pyme";
+      const required = isPyme
+        ? ["project_name", "location", "summary", "funding_amount", "funding_currency", "funds_use", "owner_country", "owner_province", "owner_phone"]
+        : ["project_name", "category", "location", "summary", "project_state", "funding_amount", "funding_currency", "funds_use", "generates_income", "has_liens", "owner_country", "owner_relation"];
+      const missing = required.filter((k) => app[k] === null || app[k] === "");
+      if (isPyme && !app.pyme?.contact_name) missing.push("contact_name");
       if (missing.length) throw new HttpError(400, "Completá los datos obligatorios antes de enviar.");
       const d = body.declarations ?? {};
       if (d.veracity !== true || d.data_processing !== true || d.no_guarantee !== true) throw new HttpError(400, "Tenés que aceptar las tres declaraciones obligatorias.");
@@ -329,17 +372,17 @@ async function handle(action: string, body: Body, req: Request): Promise<unknown
       const retention = new Date(now.getTime());
       retention.setMonth(retention.getMonth() + s.retention_months);
       const declarations = { ...(app.declarations ?? {}), veracity_at: now.toISOString(), data_processing_at: now.toISOString(), no_guarantee_at: now.toISOString(), marketing_opt_in: d.marketing === true, legal_version: LEGAL_VERSION };
-      const { error } = await db.from("tk_applications").update({ status: "recibido", stage: 4, submitted_at: now.toISOString(), declarations, retention_until: retention.toISOString(), email_status: "not_configured" }).eq("id", a.id).eq("status", "borrador");
+      const { error } = await db.from("tk_applications").update({ status: "recibido", stage: isPyme ? 6 : 4, submitted_at: now.toISOString(), declarations, retention_until: retention.toISOString(), email_status: "not_configured" }).eq("id", a.id).eq("status", "borrador");
       if (error) throw new HttpError(500, "No se pudo guardar el envío. Tus datos siguen como borrador; reintentá.");
       await ev({ app: a.id, actor: "owner", action: "submitted" });
       // La postulación ya está guardada: el resultado del correo se informa por separado y nunca la deshace.
       const mail = await sendMail(
         app.owner_email,
-        `Recibimos tu postulación ${a.expediente} | Tokenizate`,
-        `Hola ${app.owner_name},\n\nRecibimos tu postulación en Tokenizate | Alba Capital.\nNúmero de expediente: ${a.expediente}\n\nPara consultar el estado ingresá a ${SITE}/tokenizate/postular?modo=consultar con tu número de expediente y la clave de acceso que se te mostró al crearlo (por seguridad no la incluimos en este correo).\n\nRecordá que presentar el proyecto no garantiza aprobación, financiación ni emisión de tokens, y que Alba Capital no está obligada a estructurarlo ni ofrecerlo. Todo se analiza y aprueba primero; si corresponde y hay acuerdo definitivo, se formaliza con un contrato.\n\nAlba Capital`,
+        `Recibimos tu postulación ${a.expediente} | ${isPyme ? "Producción PyME" : "Tokenizate"}`,
+        `Hola ${app.owner_name},\n\nRecibimos tu postulación ${isPyme ? "de Producción PyME " : ""}en Tokenizate | Alba Capital.\nNúmero de expediente: ${a.expediente}\n\nPara consultar el estado ingresá a ${SITE}/tokenizate/postular?modo=consultar con tu número de expediente y la clave de acceso que se te mostró al crearlo (por seguridad no la incluimos en este correo).\n\nRecordá que presentar el proyecto no garantiza aprobación, financiación ni emisión de tokens, y que Alba Capital no está obligada a estructurarlo ni ofrecerlo. ${isPyme ? "La postulación inicia una evaluación: no garantiza financiación ni emisión de tokens. " : ""}Todo se analiza y aprueba primero; si corresponde y hay acuerdo definitivo, se formaliza con un contrato.\n\nAlba Capital`,
       );
       await db.from("tk_applications").update({ email_status: mail === "sent" ? "sent" : mail === "failed" ? "failed" : "not_configured" }).eq("id", a.id);
-      if (teamEmail()) await sendMail(teamEmail(), `Tokenizate: nueva postulación ${a.expediente}`, `Se recibió una nueva postulación.\n\nRevisala en el panel (requiere iniciar sesión):\n${SITE}/admin/tokenizate/${a.id}\n\nNo se adjuntan documentos.`);
+      if (teamEmail()) await sendMail(teamEmail(), `Tokenizate: nueva postulación ${isPyme ? "Producción PyME " : ""}${a.expediente}`, `Se recibió una nueva postulación.\n\nRevisala en el panel (requiere iniciar sesión):\n${SITE}/admin/tokenizate/${a.id}\n\nNo se adjuntan documentos.`);
       return { ok: true, expediente: a.expediente, status: "recibido", email: mail };
     }
 
@@ -362,8 +405,9 @@ async function handle(action: string, body: Body, req: Request): Promise<unknown
 
     case "admin_list_apps": {
       await requireStaff(req);
-      let q = db.from("tk_applications").select("id, expediente, status, owner_name, owner_email, owner_country, category, project_name, funding_amount, funding_currency, assigned_to, submitted_at, created_at, updated_at").order("updated_at", { ascending: false }).limit(300);
+      let q = db.from("tk_applications").select("id, expediente, status, modality, owner_name, owner_email, owner_country, category, project_name, funding_amount, funding_currency, assigned_to, next_action, next_action_at, pyme, submitted_at, created_at, updated_at").order("updated_at", { ascending: false }).limit(300);
       if (oneOf(body.status, STATUSES)) q = q.eq("status", body.status);
+      if (oneOf(body.modality, MODALITIES)) q = q.eq("modality", body.modality);
       const term = str(body.q, 80).replace(/[%,()]/g, " ");
       if (term) q = q.or(`expediente.ilike.%${term}%,owner_name.ilike.%${term}%,owner_email.ilike.%${term}%,project_name.ilike.%${term}%`);
       const { data } = await q;
@@ -381,7 +425,7 @@ async function handle(action: string, body: Body, req: Request): Promise<unknown
     case "admin_get_app": {
       await requireStaff(req);
       const id = str(body.id, 50);
-      const { data: app } = await db.from("tk_applications").select(APP_PUBLIC_COLS + ", assigned_to, retention_until, terms_version, privacy_version").eq("id", id).maybeSingle();
+      const { data: app } = await db.from("tk_applications").select(APP_PUBLIC_COLS + ", assigned_to, retention_until, terms_version, privacy_version, next_action, next_action_at").eq("id", id).maybeSingle();
       if (!app) throw new HttpError(404, "Expediente no encontrado");
       const [docs, reqs, notes, events, evaluation] = await Promise.all([
         db.from("tk_documents").select("id, category, original_name, mime, size_bytes, status, stage, created_at").eq("application_id", id).in("status", ["pending", "verified"]).order("created_at"),
@@ -411,8 +455,11 @@ async function handle(action: string, body: Body, req: Request): Promise<unknown
         }
       }
       if (body.assigned_to !== undefined) patch.assigned_to = body.assigned_to ? str(body.assigned_to, 50) : null;
+      if (body.next_action !== undefined) patch.next_action = opt(body.next_action, 500);
+      if (body.next_action_at !== undefined) patch.next_action_at = /^\d{4}-\d{2}-\d{2}$/.test(String(body.next_action_at)) ? body.next_action_at : null;
       if (!Object.keys(patch).length) return { ok: true };
       await db.from("tk_applications").update(patch).eq("id", id);
+      if ("next_action" in patch) await ev({ app: id, actor: "staff", actorId: uid, action: "next_action_set" });
       if (patch.status && patch.status !== cur.status) await ev({ app: id, actor: "staff", actorId: uid, action: "status_changed", detail: { from: cur.status, to: patch.status } });
       if ("assigned_to" in patch) await ev({ app: id, actor: "staff", actorId: uid, action: "assigned", detail: { to: patch.assigned_to } });
       return { ok: true };
@@ -454,7 +501,7 @@ async function handle(action: string, body: Body, req: Request): Promise<unknown
       const uid = await requireStaff(req);
       const id = str(body.id, 50);
       const fields: Body = {};
-      for (const [k, v] of Object.entries((body.fields ?? {}) as Body).slice(0, 30)) if (/^[a-z_]{1,40}$/.test(k)) fields[k] = str(v, 4000);
+      for (const [k, v] of Object.entries((body.fields ?? {}) as Body).slice(0, 60)) if (/^[a-z_]{1,40}$/.test(k)) fields[k] = str(v, 4000);
       const fees = Array.isArray(body.fees) ? (body.fees as Body[]).slice(0, 20).map((f) => ({ concept: str(f.concept, 120), amount: num(f.amount), currency: oneOf(f.currency, ["ARS", "USD"]) ?? "", note: str(f.note, 300) })) : [];
       await db.from("tk_evaluations").upsert({ application_id: id, fields, fees, updated_by: uid, updated_at: new Date().toISOString() });
       await ev({ app: id, actor: "staff", actorId: uid, action: "evaluation_saved" });
@@ -486,7 +533,7 @@ async function handle(action: string, body: Body, req: Request): Promise<unknown
       const kind = body.kind === "apps" ? "apps" : "interested";
       let rows: Body[]; let cols: string[];
       if (kind === "apps") {
-        cols = ["expediente", "status", "created_at", "submitted_at", "owner_name", "owner_email", "owner_phone", "owner_country", "owner_province", "owner_relation", "category", "project_name", "location", "project_state", "funding_amount", "funding_currency", "has_liens", "generates_income"];
+        cols = ["expediente", "modality", "status", "created_at", "submitted_at", "owner_name", "owner_email", "owner_phone", "owner_country", "owner_province", "owner_relation", "category", "project_name", "location", "project_state", "funding_amount", "funding_currency", "has_liens", "generates_income"];
         rows = (await db.from("tk_applications").select(cols.join(",")).neq("status", "borrador").order("created_at", { ascending: false }).limit(5000)).data ?? [];
       } else {
         cols = ["created_at", "name", "email", "phone", "country", "asset_type", "capital_range", "status", "marketing_consent", "utm_source", "utm_campaign"];
@@ -530,7 +577,7 @@ async function handle(action: string, body: Body, req: Request): Promise<unknown
 
 Deno.serve(async (req) => {
   const origin = req.headers.get("origin") ?? "";
-  const allowed = ORIGINS.includes(origin);
+  const allowed = ORIGINS.includes(origin) || /^https:\/\/alba-capital-[a-z0-9-]+-silviobiscayne-7277s-projects\.vercel\.app$/.test(origin);
   const cors = {
     "Access-Control-Allow-Origin": allowed ? origin : ORIGINS[0],
     "Access-Control-Allow-Headers": "authorization, content-type, apikey, x-client-info",

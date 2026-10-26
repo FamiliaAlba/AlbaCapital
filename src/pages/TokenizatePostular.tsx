@@ -28,7 +28,7 @@ const TokenizatePostular = () => {
           <h1 className="mt-6 text-3xl font-semibold text-[#0B2545] md:text-4xl">Tu activo puede impulsar su próxima etapa.</h1>
           <p className="mt-3 max-w-2xl text-muted-foreground">Presentá tu bien de capital o proyecto para que Alba Capital lo evalúe. Es un proceso por etapas, con guardado de borrador.</p>
           <div className="mt-8">
-            <ApplicationFlow consult={params.get("modo") === "consultar"} />
+            <ApplicationFlow consult={params.get("modo") === "consultar"} initialModality={params.get("modalidad") === "produccion-pyme" ? "produccion_pyme" : "activo"} />
           </div>
         </div>
       </div>

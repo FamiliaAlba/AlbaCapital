@@ -3,3 +3,8 @@ project_id = "ffamwpnrinuxvglcglaq"
 # Las acciones públicas no llevan sesión; la función autoriza cada acción internamente
 # (clave de expediente para propietarios, JWT + rol superadmin para el equipo).
 verify_jwt = false
+
+# Vista previa de Producción PyME: misma fuente que `tokenizate`, desplegada con otro nombre
+# para no modificar la función de producción hasta que se autorice el pase.
+[functions.tokenizate-preview]
+verify_jwt = false

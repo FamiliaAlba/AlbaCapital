@@ -7,14 +7,14 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { tkApi } from "@/lib/tokenizate/api";
-import { CATEGORIES, DOC_CATEGORIES, EVAL_FIELDS, PROJECT_STATES, RELATIONS, STATUS_LABEL } from "@/data/tokenizate";
+import { ALL_DOC_CATEGORIES, CATEGORIES, EVAL_FIELDS, PROJECT_STATES, PYME_EVAL_FIELDS, PYME_INTEREST_MODES, PYME_PRODUCTION_MODES, RELATIONS, STATUS_LABEL, statusLabel } from "@/data/tokenizate";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 const select = "h-10 rounded-md border border-input bg-background px-3 text-sm";
 const ACTION: Record<string, string> = {
   created: "Expediente creado", draft_saved: "Borrador guardado", submitted: "Postulación enviada", status_changed: "Cambio de estado", assigned: "Asignación", docs_requested: "Documentación solicitada",
   doc_uploaded: "Documento cargado", doc_deleted: "Documento eliminado", doc_rejected: "Documento rechazado", doc_access: "Acceso a documento", note_added: "Observación interna", communication_logged: "Comunicación registrada",
-  evaluation_saved: "Ficha de evaluación guardada", retention_purge: "Depuración por vencimiento", export: "Exportación",
+  evaluation_saved: "Ficha de evaluación guardada", next_action_set: "Próxima acción actualizada", retention_purge: "Depuración por vencimiento", export: "Exportación",
 };
 
 const AdminTokenizateApp = () => {
@@ -25,6 +25,7 @@ const AdminTokenizateApp = () => {
   const [error, setError] = useState<string | null>(null);
   const [note, setNote] = useState({ kind: "note", channel: "", body: "" });
   const [request, setRequest] = useState("");
+  const [next, setNext] = useState({ action: "", at: "" });
   const [evalF, setEvalF] = useState<Record<string, string>>({});
   const [fees, setFees] = useState<{ concept: string; amount: string; currency: string; note: string }[]>([]);
 
@@ -33,6 +34,7 @@ const AdminTokenizateApp = () => {
       const r = await tkApi("admin_get_app", { id }, { admin: true });
       setD(r);
       setEvalF(r.evaluation?.fields ?? {});
+      setNext({ action: r.application.next_action ?? "", at: r.application.next_action_at ?? "" });
       setFees((r.evaluation?.fees ?? []).map((f: any) => ({ ...f, amount: f.amount ?? "" })));
       setError(null);
     } catch (e) {
@@ -55,6 +57,10 @@ const AdminTokenizateApp = () => {
   if (error) return <AdminLayout><p role="alert" className="rounded-lg border border-destructive/40 bg-destructive/10 p-4 text-sm">{error}</p></AdminLayout>;
   if (!d) return <AdminLayout><Loader2 className="h-6 w-6 animate-spin" /></AdminLayout>;
   const a = d.application;
+  const isPyme = a.modality === "produccion_pyme";
+  const py = (a.pyme ?? {}) as Record<string, any>;
+  const stateOf = (k: string) => ({ comprobado: "comprobado", estimado: "estimación", no_tengo: "todavía no lo tiene", orientacion: "necesita orientación" } as Record<string, string>)[py._state?.[k] ?? ""] ?? "";
+  const pyRow = (k: string, l: string) => row(l, py[k] ? <span className="whitespace-pre-wrap">{py[k]}{stateOf(k) ? <em className="ml-2 text-xs text-muted-foreground">({stateOf(k)})</em> : null}</span> : null);
   const row = (k: string, v: any) => <div className="grid gap-1 py-2 sm:grid-cols-[12rem_1fr]"><dt className="text-sm text-muted-foreground">{k}</dt><dd className="text-sm">{v ?? "—"}</dd></div>;
 
   return (
@@ -63,11 +69,11 @@ const AdminTokenizateApp = () => {
       <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-light text-architectural">{a.project_name ?? "Sin nombre"}</h1>
-          <p className="font-mono text-sm text-muted-foreground">{a.expediente} · confirmación por correo: {a.email_status === "not_configured" ? "no configurada" : a.email_status}</p>
+          <p className="font-mono text-sm text-muted-foreground">{a.expediente} · {isPyme ? "Producción PyME · " : ""} confirmación por correo: {a.email_status === "not_configured" ? "no configurada" : a.email_status}</p>
         </div>
         <div className="flex flex-wrap gap-3">
           <label className="text-xs">Estado<br /><select className={select} value={a.status} disabled={a.status === "borrador"} onChange={(e) => run(() => tkApi("admin_update_app", { id, status: e.target.value }, { admin: true }), "Estado actualizado")}>
-            {Object.entries(STATUS_LABEL).map(([k, v]) => <option key={k} value={k} disabled={k === "borrador"}>{v}</option>)}</select></label>
+            {Object.keys(STATUS_LABEL).map((k) => <option key={k} value={k} disabled={k === "borrador"}>{statusLabel(k, a.modality)}</option>)}</select></label>
           <label className="text-xs">Responsable<br /><select className={select} value={a.assigned_to ?? ""} onChange={(e) => run(() => tkApi("admin_update_app", { id, assigned_to: e.target.value || null }, { admin: true }), "Responsable asignado")}>
             <option value="">Sin asignar</option>{staff.map((s) => <option key={s.id} value={s.id}>{s.email}</option>)}</select></label>
         </div>
@@ -90,12 +96,36 @@ const AdminTokenizateApp = () => {
           {Object.keys(a.data ?? {}).length > 0 && <div className="mt-3 text-xs text-muted-foreground"><p className="font-medium text-foreground">Documentación que el postulante indicó no tener todavía:</p>{Object.entries(a.data).filter(([k, v]) => k.startsWith("why_") && v).map(([k, v]) => <p key={k}>• {String(v)}</p>)}</div>}
         </section>
 
+        {isPyme && (
+          <section className="rounded-xl border border-border bg-background p-5 xl:col-span-2">
+            <h2 className="mb-2 text-lg font-light">Producción PyME · datos informados</h2>
+            <p className="mb-2 text-xs text-muted-foreground">Lo que figura entre paréntesis indica si el postulante lo marcó como dato comprobado, estimación o faltante.</p>
+            <dl className="grid divide-y divide-border md:grid-cols-2 md:gap-x-8 md:divide-y-0">
+              {pyRow("contact_name", "Contacto")}{pyRow("contact_role", "Función")}{pyRow("cuit", "CUIT")}{pyRow("representation", "Representación")}
+              {pyRow("experience", "Experiencia")}{pyRow("capacity", "Capacidad de producción")}{row("Forma de producción", PYME_PRODUCTION_MODES[py.production_mode])}{pyRow("maker_info", "Fabricante a fasón")}
+              {pyRow("lot_id", "Lote")}{pyRow("lot_volume", "Volumen")}{pyRow("lot_unit", "Unidad")}{pyRow("current_stage", "Etapa actual")}
+              {pyRow("schedule", "Calendario")}{pyRow("budget", "Presupuesto")}{pyRow("own_contribution", "Aporte propio")}{pyRow("other_funding", "Otras fuentes")}
+              {pyRow("sales_history", "Ventas históricas")}{pyRow("orders_buyers", "Pedidos y compradores")}{pyRow("price_estimate", "Precio estimado")}{pyRow("price_basis", "Fundamento del precio")}
+              {pyRow("distribution_costs", "Costos de distribución")}{pyRow("risks", "Riesgos")}{pyRow("insurance", "Seguros")}{row("Modalidad de interés", PYME_INTEREST_MODES[py.interest_mode])}
+            </dl>
+          </section>
+        )}
+
+        <section className="rounded-xl border border-border bg-background p-5 xl:col-span-2">
+          <h2 className="mb-2 text-lg font-light">Próxima acción (interna)</h2>
+          <div className="flex flex-wrap items-end gap-3">
+            <label className="min-w-[16rem] flex-1 text-sm">Qué sigue<Input className="mt-1" maxLength={500} value={next.action} onChange={(e) => setNext({ ...next, action: e.target.value })} /></label>
+            <label className="text-sm">Fecha<Input type="date" className="mt-1" value={next.at} onChange={(e) => setNext({ ...next, at: e.target.value })} /></label>
+            <Button size="sm" onClick={() => run(() => tkApi("admin_update_app", { id, next_action: next.action, next_action_at: next.at || null }, { admin: true }), "Próxima acción guardada")}>Guardar</Button>
+          </div>
+        </section>
+
         <section className="rounded-xl border border-border bg-background p-5">
           <h2 className="mb-2 text-lg font-light">Documentos (acceso con enlace temporal y registro)</h2>
           {d.documents.length === 0 ? <p className="text-sm text-muted-foreground">Sin documentos.</p> : (
             <ul className="divide-y divide-border text-sm">
               {d.documents.map((x: any) => (
-                <li key={x.id} className="flex items-center justify-between gap-3 py-2"><span className="min-w-0 truncate">{x.original_name}<span className="ml-2 text-xs text-muted-foreground">{DOC_CATEGORIES[x.category]} · {x.stage} · {(x.size_bytes / 1048576).toFixed(2)} MB</span></span>
+                <li key={x.id} className="flex items-center justify-between gap-3 py-2"><span className="min-w-0 truncate">{x.original_name}<span className="ml-2 text-xs text-muted-foreground">{ALL_DOC_CATEGORIES[x.category] ?? x.category} · {x.stage} · {(x.size_bytes / 1048576).toFixed(2)} MB</span></span>
                   <Button size="sm" variant="outline" onClick={() => openDoc(x.id)}><Download className="mr-1 h-3.5 w-3.5" /> Abrir</Button></li>
               ))}
             </ul>
@@ -110,7 +140,7 @@ const AdminTokenizateApp = () => {
           <h2 className="mb-1 text-lg font-light">Ficha interna de evaluación</h2>
           <p className="mb-4 text-xs text-muted-foreground">Registro cualitativo del equipo. No genera puntajes, probabilidades ni aprobaciones automáticas.</p>
           <div className="grid gap-4 md:grid-cols-2">
-            {EVAL_FIELDS.map((f) => (<label key={f.key} className="text-sm">{f.label}<Textarea rows={3} className="mt-1" value={evalF[f.key] ?? ""} onChange={(e) => setEvalF({ ...evalF, [f.key]: e.target.value })} /></label>))}
+            {(isPyme ? PYME_EVAL_FIELDS : EVAL_FIELDS).map((f) => (<label key={f.key} className="text-sm">{f.label}<Textarea rows={3} className="mt-1" value={evalF[f.key] ?? ""} onChange={(e) => setEvalF({ ...evalF, [f.key]: e.target.value })} /></label>))}
           </div>
           <h3 className="mb-2 mt-5 text-sm font-medium">Honorarios (registro interno, no se publican)</h3>
           {fees.map((f, i) => (
@@ -139,7 +169,7 @@ const AdminTokenizateApp = () => {
 
         <section className="rounded-xl border border-border bg-background p-5">
           <h2 className="mb-2 text-lg font-light">Historial de cambios y accesos</h2>
-          <ul className="space-y-1.5 text-xs">{d.events.map((e: any) => <li key={e.id} className="flex gap-3"><span className="w-36 shrink-0 text-muted-foreground">{new Date(e.created_at).toLocaleString("es-AR")}</span><span>{ACTION[e.action] ?? e.action} <span className="text-muted-foreground">({e.actor_type}{e.detail?.to ? ` → ${STATUS_LABEL[e.detail.to] ?? e.detail.to}` : ""})</span></span></li>)}</ul>
+          <ul className="space-y-1.5 text-xs">{d.events.map((e: any) => <li key={e.id} className="flex gap-3"><span className="w-36 shrink-0 text-muted-foreground">{new Date(e.created_at).toLocaleString("es-AR")}</span><span>{ACTION[e.action] ?? e.action} <span className="text-muted-foreground">({e.actor_type}{e.detail?.to ? ` → ${statusLabel(e.detail.to, a.modality)}` : ""})</span></span></li>)}</ul>
         </section>
       </div>
     </AdminLayout>

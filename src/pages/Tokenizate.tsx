@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import { ArrowRight, BarChart3, ClipboardCheck, FileSearch, Layers, ScrollText, Scale, ShieldAlert, ShieldCheck, Gavel, Search, FileCheck2, Landmark, FolderLock } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import InterestForm from "@/components/tokenizate/InterestForm";
+import PymeSection from "@/components/tokenizate/PymeSection";
+import { PYME_ENABLED } from "@/lib/tokenizate/backend";
 import { ASSET_ICONS, HeroDiagram, ProjectCardMock } from "@/components/tokenizate/TkIllustrations";
 
 const TITLE = "Tokenizate | Alba Capital";
@@ -92,9 +94,10 @@ const Tokenizate = () => {
               <p className="mt-5 max-w-xl text-lg leading-relaxed text-muted-foreground">
                 Conocé cómo funciona la inversión tokenizada o postulá tu activo para que Alba Capital evalúe sus posibilidades de financiación.
               </p>
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                 <a href="#invertir" className={btnPrimary}>Quiero conocer cómo invertir <ArrowRight className="h-4 w-4" aria-hidden="true" /></a>
                 <a href="#postular" className={btnSecondary}>Quiero postular mi activo</a>
+                {PYME_ENABLED && <a href="#produccion-pyme" className={btnSecondary}>Quiero financiar mi producción</a>}
               </div>
               <p className="mt-6 max-w-xl text-sm text-muted-foreground">Alba Capital conecta activos, proyectos e inversores mediante análisis profesional y estructuras adecuadas para cada oportunidad.</p>
             </div>
@@ -169,6 +172,8 @@ const Tokenizate = () => {
           </div>
         </div>
       </section>
+
+      {PYME_ENABLED && <PymeSection />}
 
       {/* Cuerpo B: propietarios */}
       <section id="postular" className="scroll-mt-24 bg-[#0B2545] py-16 text-white md:py-24">

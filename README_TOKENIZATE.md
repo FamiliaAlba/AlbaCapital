@@ -36,3 +36,13 @@ Landing educativa (`/tokenizate`), captación de interesados y recepción privad
 ## Desactivar
 
 Quitar las rutas de `src/App.tsx`/`AdminApp.tsx`, o desplegar una versión de la función que responda 503. Los datos quedan intactos.
+
+## Producción PyME (vista previa, rama `preview/produccion-pyme`)
+
+Módulo "Microtokenización de lotes productivos": presentación en `/tokenizate#produccion-pyme`, acceso "Quiero financiar mi producción", y postulación productiva en `/tokenizate/postular?modalidad=produccion-pyme` (6 etapas con borrador, datos comprobados vs. estimados, "todavía no lo tengo" / "necesito orientación", y documentación privada con categorías propias). Se integra a los mismos expedientes: `tk_applications.modality = 'produccion_pyme'`, campos específicos en `tk_applications.pyme` (jsonb con lista cerrada de claves y longitudes), `next_action` interna, y un único estado nuevo (`propuesta_estructuracion`). "No viable" y "Archivada" reutilizan `no_elegible` y `cerrado` con otro rótulo. Los expedientes anteriores quedan con `modality = 'activo'` y se comportan igual.
+
+**Aislamiento respecto de producción:** la rama usa la función `tokenizate-preview` (misma fuente que `tokenizate`) y la versión de textos `2026-10-26`; en los dominios de producción (`src/lib/tokenizate/backend.ts`) el módulo permanece oculto y se sigue usando `tokenizate`. La migración `20261026000000_tokenizate_produccion_pyme.sql` es aditiva y ya está aplicada (la base es compartida).
+
+**Para pasar a producción (requiere autorización):** (1) desplegar `supabase/functions/tokenizate/index.ts` como función `tokenizate`; (2) fusionar la rama a `main` y dejar `PYME_ENABLED = true` en `backend.ts` (función `tokenizate`, versión `2026-10-26`); (3) revisión del asesor legal de las nuevas cláusulas; (4) eliminar `tokenizate-preview`.
+
+**Sin implementar a propósito:** billeteras, pagos, contratos inteligentes, emisión de tokens, negociación secundaria, publicación de proyectos y cualquier botón de compra. Una evaluación "viable" no publica nada ni habilita inversiones.
