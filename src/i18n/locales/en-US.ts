@@ -35,6 +35,8 @@ export const enUS: DeepPartialDictionary = {
     subtitle:
       "We combine business strategy with market expertise to deliver effective solutions for our clients.",
     scroll: "SCROLL",
+    pause: "Pause the cover video",
+    play: "Play the cover video",
   },
   landPortfolio: {
     kicker: "ASSET PORTFOLIO",

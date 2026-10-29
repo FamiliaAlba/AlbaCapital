@@ -35,6 +35,8 @@ export const ptBR: DeepPartialDictionary = {
     subtitle:
       "Combinamos estratégia empresarial com conhecimento de mercado para oferecer soluções eficazes aos nossos clientes.",
     scroll: "DESLIZAR",
+    pause: "Pausar o vídeo de capa",
+    play: "Reproduzir o vídeo de capa",
   },
   landPortfolio: {
     kicker: "PORTFÓLIO DE ATIVOS",
