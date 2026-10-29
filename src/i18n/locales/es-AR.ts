@@ -34,6 +34,8 @@ export const esAR = {
     subtitle:
       "Combinamos la estrategia empresarial con el conocimiento del mercado para ofrecer soluciones efectivas a sus clientes.",
     scroll: "DESLIZAR",
+    pause: "Pausar el video de portada",
+    play: "Reanudar el video de portada",
   },
   landPortfolio: {
     kicker: "PORTFOLIO DE ACTIVOS",
