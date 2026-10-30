@@ -16,12 +16,23 @@ export interface HeroVideoSource {
 /** Se cambia al regenerar los archivos para que ningún navegador reutilice una versión vieja. */
 export const ASSET_VERSION = "1";
 
-const source = (variant: "desktop" | "mobile"): HeroVideoSource => ({
-  src: `/hero/alba-hero-${variant}.mp4?v=${ASSET_VERSION}`,
+export type HeroLocale = "es-AR" | "en-US" | "pt-BR";
+
+/** Los títulos van dentro del video: hay una versión por idioma (español sin sufijo). */
+const SUFFIX: Record<HeroLocale, string> = { "es-AR": "", "en-US": "-en", "pt-BR": "-pt" };
+
+const source = (variant: "desktop" | "mobile", locale: HeroLocale): HeroVideoSource => ({
+  src: `/hero/alba-hero-${variant}${SUFFIX[locale] ?? ""}.mp4?v=${ASSET_VERSION}`,
+  // La portada (imagen original) es la misma para todos los idiomas.
   poster: `/hero/alba-hero-${variant}.webp?v=${ASSET_VERSION}`,
 });
 
-export const HERO_VIDEO = { desktop: source("desktop"), mobile: source("mobile") };
+export const heroVideoFor = (locale: string) => {
+  const l: HeroLocale = locale === "en-US" || locale === "pt-BR" ? locale : "es-AR";
+  return { desktop: source("desktop", l), mobile: source("mobile", l) };
+};
+
+export const HERO_VIDEO = heroVideoFor("es-AR");
 
 /** Duración del montaje y tramo (en segundos) en que el cuadro ya es la portada original: ahí aparece el titular del sitio. */
 export const HERO_VIDEO_TIMING = { duration: 28, textFrom: 24.3, textUntil: 27.3 };
