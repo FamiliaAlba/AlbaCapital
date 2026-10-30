@@ -3,7 +3,7 @@ import { Pause, Play } from "lucide-react";
 import { useI18n } from "@/i18n/I18nProvider";
 import heroImage from "@/assets/hero-architecture.webp";
 import {
-  HERO_VIDEO,
+  heroVideoFor,
   VIDEO_MAX_WAIT_MS,
   classifyPlayError,
   isHeadlineVisible,
@@ -64,7 +64,9 @@ interface LayerProps {
 }
 
 function HeroMedia({ narrow, allowVideo, playing, onActive, onTime }: LayerProps) {
-  const source = narrow ? HERO_VIDEO.mobile : HERO_VIDEO.desktop;
+  const { locale } = useI18n();
+  const video = heroVideoFor(locale);
+  const source = narrow ? video.mobile : video.desktop;
   const ref = useRef<HTMLVideoElement | null>(null);
   const [failed, setFailed] = useState(false);
   const [blocked, setBlocked] = useState(false);
