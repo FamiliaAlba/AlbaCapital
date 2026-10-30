@@ -1,9 +1,9 @@
 # Video de portada (Hero)
 
-Un solo clip de 28 s, sin audio, en bucle: campo, ganadería, obra, loteo, energía y puerto con títulos sobrios palabra por palabra, el logo de Alba Capital y el cierre sobre la imagen de portada de siempre (`src/assets/hero-architecture.webp`).
+Un solo clip de 28 s, sin audio, en bucle: campo, ganadería, obra, loteo, parque eólico con las sierras y puerto, con títulos sobrios palabra por palabra, el logo de Alba Capital y el cierre sobre la imagen de portada de siempre (`src/assets/hero-architecture.webp`).
 
 ## Archivos
-- `public/hero/alba-hero-desktop.mp4` (1920×1080) y `alba-hero-mobile.mp4` (720×1280), más las versiones `-en` y `-pt`. H.264 High 4.1, yuv420p, BT.709, `+faststart`, sin pista de audio.
+- `public/hero/alba-hero-desktop.mp4` (1600×900, ~4,4 MB, ~1,25 Mbps) y `alba-hero-mobile.mp4` (720×1280, ~3 MB, ~0,85 Mbps), más las versiones `-en` y `-pt`. H.264 High 4.1, yuv420p, BT.709, `+faststart`, sin pista de audio.
 - `public/hero/alba-hero-*.webp`: portada de cada recorte (la imagen original).
 - `src/lib/heroVideo.ts`: rutas con `?v=ASSET_VERSION` (subirla al regenerar), tiempos y reglas puras (testeadas en `tests/hero-video.test.ts`).
 - `src/components/Hero.tsx`: componente.

@@ -14,7 +14,7 @@ export interface HeroVideoSource {
 }
 
 /** Se cambia al regenerar los archivos para que ningún navegador reutilice una versión vieja. */
-export const ASSET_VERSION = "1";
+export const ASSET_VERSION = "2";
 
 export type HeroLocale = "es-AR" | "en-US" | "pt-BR";
 
