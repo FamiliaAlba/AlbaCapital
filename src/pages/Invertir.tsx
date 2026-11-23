@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Layers, Shield, Coins, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import StepCard from "@/components/StepCard";
-import LeadForm from "@/components/LeadForm";
 
 // Landing de ALBA DIGITAL SOLUTIONS al pie de la pestaña; se carga aparte para no pesar en el resto del sitio.
 const AlbaEngine = lazy(() => import("@/features/digital-solutions/AlbaEngine"));
@@ -31,7 +30,7 @@ const Invertir = () => {
                 </Link>
               </Button>
               <Button asChild size="lg" variant="outline">
-                <a href="#formulario">Hablá con un asesor</a>
+                <Link to="/contact">Hablá con un asesor</Link>
               </Button>
             </div>
           </div>
@@ -117,17 +116,6 @@ const Invertir = () => {
         </div>
       </section>
 
-      <section id="formulario" className="border-t border-border bg-muted/30 py-20">
-        <div className="container mx-auto px-6">
-          <div className="mx-auto max-w-3xl space-y-8">
-            <LeadForm
-              source="invertir"
-              title="Hablemos de tu inversión"
-              description="Completá el formulario y un asesor te contacta en menos de 24hs."
-            />
-          </div>
-        </div>
-      </section>
 
       <Suspense fallback={null}>
         <AlbaEngine />

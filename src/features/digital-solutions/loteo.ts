@@ -85,7 +85,7 @@ export const STATE_LABEL: Record<LotState, string> = {
 };
 
 export const STATE_COLOR: Record<LotState, string> = {
-  disponible: "#6caede",
-  reservado: "#e7b04a",
-  vendido: "#5d6d83",
+  disponible: "#d2d2d2",
+  reservado: "#c9a24d",
+  vendido: "#4a4a4a",
 };
