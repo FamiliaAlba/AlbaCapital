@@ -1,9 +1,12 @@
-import { useEffect } from "react";
+import { Suspense, lazy, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import OpportunityCard from "@/components/OpportunityCard";
 import LeadForm from "@/components/LeadForm";
 import { useOpportunities } from "@/hooks/useOpportunities";
 import { useI18n } from "@/i18n/I18nProvider";
+
+// Landing de ALBA DIGITAL SOLUTIONS al pie de la pestaña; se carga aparte para no pesar en el resto del sitio.
+const AlbaEngine = lazy(() => import("@/features/digital-solutions/AlbaEngine"));
 
 const Oportunidades = () => {
   const location = useLocation();
@@ -134,6 +137,10 @@ const Oportunidades = () => {
           </div>
         </div>
       </section>
+
+      <Suspense fallback={null}>
+        <AlbaEngine />
+      </Suspense>
     </div>
   );
 };
