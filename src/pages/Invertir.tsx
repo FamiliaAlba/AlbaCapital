@@ -1,8 +1,12 @@
+import { Suspense, lazy } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, Layers, Shield, Coins, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import StepCard from "@/components/StepCard";
 import LeadForm from "@/components/LeadForm";
+
+// Landing de ALBA DIGITAL SOLUTIONS al pie de la pestaña; se carga aparte para no pesar en el resto del sitio.
+const AlbaEngine = lazy(() => import("@/features/digital-solutions/AlbaEngine"));
 
 const Invertir = () => {
   return (
@@ -124,6 +128,10 @@ const Invertir = () => {
           </div>
         </div>
       </section>
+
+      <Suspense fallback={null}>
+        <AlbaEngine />
+      </Suspense>
     </div>
   );
 };
