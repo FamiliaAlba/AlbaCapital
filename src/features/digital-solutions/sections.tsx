@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
 import { ArrowRight, Boxes, Globe, Smartphone, Users, Workflow } from "lucide-react";
-import { ADVISORY, BRAND, CASE, CONTACT, FOOTER, HERO, HERO_IMAGE, NAV, SECTIONS, SYSTEMS, VISUALIZATION } from "./content";
-import { HeroMockup, PanoramaArt } from "./art";
+import { ADVISORY, BRAND, CASE, CONTACT, FOOTER, HERO, HERO_IMAGE, SECTIONS, SYSTEMS, VISUALIZATION } from "./content";
+import { HeroMockup } from "./art";
 import { SystemsDemo } from "./demos";
 import { LoteoDrawing, MasterplanViewer } from "./MasterplanViewer";
 import { InquiryForm } from "./InquiryForm";
@@ -18,26 +17,8 @@ interface WithInquiry {
 export function BrandMark() {
   return (
     <span className="ads-brand">
-      <img className="ads-brand__logo" src={LOGO} width={256} height={256} alt="" />
-      <span className="ads-brand__name">ALBA DIGITAL<span>SOLUTIONS</span></span>
+      <span className="ads-brand__name">{BRAND}</span>
     </span>
-  );
-}
-
-export function Header({ topId = "top" }: { topId?: string }) {
-  return (
-    <div className="ads-header">
-      <div className="ads-wrap ads-header__bar">
-        <a href={`#${topId}`} className="ads-brandlink" aria-label={BRAND}>
-          <BrandMark />
-        </a>
-        <nav className="ads-nav" aria-label="Secciones de la página">
-          {NAV.map((n, i) => (
-            <a key={n.href} href={n.href} className={i === NAV.length - 1 ? "ads-nav__cta" : undefined}>{n.label}</a>
-          ))}
-        </nav>
-      </div>
-    </div>
   );
 }
 
@@ -89,10 +70,8 @@ export function HeroSplash({ whenVisible = false }: { whenVisible?: boolean }) {
       }}
     >
       <div className="ads-splash__inner">
-        <div className="ads-splash__mark">
-          <span className="ads-splash__ring" />
-          <span className="ads-splash__plate"><img src="/digital-solutions/logo-ads-512.png" width={512} height={512} alt="" /></span>
-        </div>
+        <img className="ads-splash__logo" src="/digital-solutions/logo-ads-512.png" width={512} height={512} alt="" />
+        <span className="ads-splash__rule" />
         <span className="ads-splash__word">{BRAND}</span>
       </div>
     </div>
@@ -107,7 +86,6 @@ export function Hero({ embedded = false }: { embedded?: boolean }) {
       <div className="ads-wrap ads-hero__grid">
         <div>
           <div className="ads-hero__brandrow ads-rise">
-            <span className="ads-hero__badge" aria-hidden="true"><img src={LOGO} width={256} height={256} alt="" /></span>
             <p className="ads-eyebrow">{BRAND}</p>
           </div>
           {/* Incrustada en otra página (que ya tiene su h1), este título se anuncia como nivel 2. */}
@@ -127,9 +105,6 @@ export function Hero({ embedded = false }: { embedded?: boolean }) {
           <p style={{ marginTop: 6, color: "var(--ads-muted)", fontSize: 15 }}>{HERO.note}</p>
         </div>
         <div className="ads-hero__visual"><HeroMockup /></div>
-      </div>
-      <div className="ads-hero__panorama" aria-hidden="false">
-        <PanoramaArt className="ads-hero__art" />
       </div>
     </section>
   );
@@ -244,7 +219,7 @@ function CaseVisual({ index }: { index: number }) {
             <b>{s.name}</b>
             <div style={{ display: "grid", gridTemplateColumns: "110px 1fr", gap: 8, alignItems: "center" }}>
               <small>Superficie por lote</small><div className="ads-mini__bar"><i style={{ width: `${s.area}%` }} /></div>
-              <small>Cantidad de lotes</small><div className="ads-mini__bar"><i style={{ width: `${s.count}%`, background: "#3078ba" }} /></div>
+              <small>Cantidad de lotes</small><div className="ads-mini__bar"><i style={{ width: `${s.count}%`, background: "#8c8c8c" }} /></div>
             </div>
           </div>
         ))}
@@ -339,14 +314,8 @@ export function Footer() {
   return (
     <footer className="ads-footer">
       <div className="ads-wrap ads-footer__grid">
-        <div style={{ display: "grid", gap: 14 }}>
-          <BrandMark />
-          <p style={{ maxWidth: "52ch" }}>{FOOTER.line}</p>
-        </div>
-        <nav aria-label="Pie de página">
-          {NAV.map((n) => <a key={n.href} href={n.href}>{n.label}</a>)}
-          <Link to="/">{FOOTER.homeLabel}</Link>
-        </nav>
+        <BrandMark />
+        <p style={{ maxWidth: "60ch" }}>{FOOTER.line}</p>
       </div>
     </footer>
   );

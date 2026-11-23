@@ -38,46 +38,46 @@ export function LoteoDrawing({ view, interactive, selectedLot, selectedSpot, onS
     >
       <defs>
         <pattern id="mp-grid" width="40" height="40" patternUnits="userSpaceOnUse">
-          <path d="M40 0H0V40" fill="none" stroke="#16263b" strokeWidth="1" />
+          <path d="M40 0H0V40" fill="none" stroke="#161616" strokeWidth="1" />
         </pattern>
         <pattern id="mp-hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-          <line x1="0" y1="0" x2="0" y2="8" stroke="#2c6b4e" strokeWidth="2" />
+          <line x1="0" y1="0" x2="0" y2="8" stroke="#444444" strokeWidth="2" />
         </pattern>
       </defs>
-      <rect x={-400} y={-300} width={1600} height={1100} fill="#0a121f" />
+      <rect x={-400} y={-300} width={1600} height={1100} fill="#060606" />
       <rect x={-400} y={-300} width={1600} height={1100} fill="url(#mp-grid)" />
 
       {/* Perímetro y cinturón verde */}
-      <rect x={100} y={44} width={600} height={452} rx={26} fill="#0d1b2c" stroke="#2f8f68" strokeWidth={2} strokeDasharray="10 7" />
+      <rect x={100} y={44} width={600} height={452} rx={26} fill="#0d0d0d" stroke="#777777" strokeWidth={2} strokeDasharray="10 7" />
 
       {/* Parque lineal */}
       <rect x={118} y={322} width={564} height={46} rx={8} fill="url(#mp-hatch)" opacity={0.55} />
-      <rect x={118} y={322} width={564} height={46} rx={8} fill="#1f5e45" opacity={0.35} />
-      <text x={150} y={349} fill="#a9e0c6" fontSize={13} letterSpacing={2}>PARQUE LINEAL</text>
+      <rect x={118} y={322} width={564} height={46} rx={8} fill="#3a3a3a" opacity={0.35} />
+      <text x={150} y={349} fill="#d9d9d9" fontSize={13} letterSpacing={2}>PARQUE LINEAL</text>
 
       {/* Calles */}
-      <g stroke="#1c2c43" strokeLinecap="round">
+      <g stroke="#1c1c1c" strokeLinecap="round">
         <line x1={400} y1={496} x2={400} y2={128} strokeWidth={22} />
         <line x1={110} y1={250} x2={690} y2={250} strokeWidth={16} />
         <line x1={110} y1={380} x2={690} y2={380} strokeWidth={16} />
       </g>
-      <g stroke="#3a5576" strokeWidth={1.5} strokeDasharray="9 9">
+      <g stroke="#505050" strokeWidth={1.5} strokeDasharray="9 9">
         <line x1={400} y1={492} x2={400} y2={130} />
         <line x1={114} y1={250} x2={686} y2={250} />
         <line x1={114} y1={380} x2={686} y2={380} />
       </g>
 
       {/* Club house con pileta */}
-      <rect x={330} y={62} width={140} height={62} rx={10} fill="#16385a" stroke="#6caede" strokeWidth={1.5} />
-      <rect x={346} y={98} width={46} height={16} rx={4} fill="#3078ba" opacity={0.85} />
-      <text x={400} y={86} textAnchor="middle" fill="#dcecf9" fontSize={13} fontWeight={650} letterSpacing={2}>CLUB HOUSE</text>
+      <rect x={330} y={62} width={140} height={62} rx={10} fill="#202020" stroke="#d2d2d2" strokeWidth={1.5} />
+      <rect x={346} y={98} width={46} height={16} rx={4} fill="#8c8c8c" opacity={0.85} />
+      <text x={400} y={86} textAnchor="middle" fill="#ededed" fontSize={13} fontWeight={650} letterSpacing={2}>CLUB HOUSE</text>
 
       {/* Plaza central */}
-      <circle cx={400} cy={315} r={15} fill="#1f5e45" stroke="#a9e0c6" strokeWidth={1.5} />
+      <circle cx={400} cy={315} r={15} fill="#3a3a3a" stroke="#d9d9d9" strokeWidth={1.5} />
 
       {/* Acceso */}
-      <rect x={380} y={494} width={40} height={10} rx={3} fill="#e8eef6" />
-      <text x={400} y={518} textAnchor="middle" fill="#9fb0c4" fontSize={12} letterSpacing={2}>ACCESO</text>
+      <rect x={380} y={494} width={40} height={10} rx={3} fill="#f0f0f0" />
+      <text x={400} y={518} textAnchor="middle" fill="#9a9a9a" fontSize={12} letterSpacing={2}>ACCESO</text>
 
       {/* Lotes */}
       {lots.map((l) => {
@@ -100,8 +100,8 @@ export function LoteoDrawing({ view, interactive, selectedLot, selectedSpot, onS
                 }
               : { "aria-hidden": true })}
           >
-            <rect x={l.x} y={l.y} width={l.w} height={l.h} rx={5} fill={STATE_COLOR[l.state]} fillOpacity={l.state === "vendido" ? 0.55 : 0.9} stroke={selected ? "#fff" : "#0a121f"} strokeWidth={selected ? 3 : 1.5} />
-            <text x={l.x + l.w / 2} y={l.y + l.h / 2 + 5} textAnchor="middle" fontSize={14} fontWeight={700} fill={l.state === "reservado" ? "#2a1d00" : l.state === "disponible" ? "#06223a" : "#e8eef6"} pointerEvents="none">
+            <rect x={l.x} y={l.y} width={l.w} height={l.h} rx={5} fill={STATE_COLOR[l.state]} fillOpacity={l.state === "vendido" ? 0.55 : 0.9} stroke={selected ? "#fff" : "#060606"} strokeWidth={selected ? 3 : 1.5} />
+            <text x={l.x + l.w / 2} y={l.y + l.h / 2 + 5} textAnchor="middle" fontSize={14} fontWeight={700} fill={l.state === "reservado" ? "#2a1d00" : l.state === "disponible" ? "#080808" : "#f0f0f0"} pointerEvents="none">
               {l.id}
             </text>
           </g>
@@ -114,7 +114,7 @@ export function LoteoDrawing({ view, interactive, selectedLot, selectedSpot, onS
         SECTORS.map((s) => (
           <g key={s.id} role="button" tabIndex={0} aria-label={`${s.label}: ver sus lotes`} onClick={() => onSector?.(s.id)} onKeyDown={onActivate(() => onSector?.(s.id))}>
             <rect className="sector-hit" x={s.hit[0]} y={s.hit[1]} width={s.hit[2]} height={s.hit[3]} rx={10} />
-            <text x={s.hit[0] + 12} y={s.hit[1] - 6} fill="#6caede" fontSize={15} fontWeight={700} letterSpacing={2} pointerEvents="none">
+            <text x={s.hit[0] + 12} y={s.hit[1] - 6} fill="#d2d2d2" fontSize={15} fontWeight={700} letterSpacing={2} pointerEvents="none">
               {s.label.toUpperCase()}
             </text>
           </g>
@@ -124,8 +124,8 @@ export function LoteoDrawing({ view, interactive, selectedLot, selectedSpot, onS
       {interactive && general &&
         SPOTS.map((p) => (
           <g key={p.id} className="hotspot" role="button" tabIndex={0} aria-label={p.label} aria-pressed={selectedSpot === p.id} onClick={() => onSpot?.(p.id)} onKeyDown={onActivate(() => onSpot?.(p.id))}>
-            <circle className="ring" cx={p.cx} cy={p.cy} r={13} fill="rgba(10,18,31,0.55)" stroke={selectedSpot === p.id ? "#fff" : "#6caede"} strokeWidth={2} />
-            <circle cx={p.cx} cy={p.cy} r={5} fill="#6caede" />
+            <circle className="ring" cx={p.cx} cy={p.cy} r={13} fill="rgba(0,0,0,0.55)" stroke={selectedSpot === p.id ? "#fff" : "#d2d2d2"} strokeWidth={2} />
+            <circle cx={p.cx} cy={p.cy} r={5} fill="#d2d2d2" />
           </g>
         ))}
     </svg>

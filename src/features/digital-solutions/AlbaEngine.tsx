@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react";
 import "./ads.css";
 import type { InquiryType } from "./inquiry";
-import { AdvisorySection, CaseSection, ContactSection, Footer, Header, Hero, SystemsSection, VisualizationSection } from "./sections";
+import { AdvisorySection, CaseSection, ContactSection, Footer, Hero, SystemsSection, VisualizationSection } from "./sections";
 
 /**
  * Landing de ALBA DIGITAL SOLUTIONS incrustada al pie de otra página (Oportunidades).
@@ -22,7 +22,6 @@ export default function AlbaEngine() {
 
   return (
     <div className="ads-root ads-root--embedded" id="alba-engine">
-      <Header topId="alba-engine" />
       <div>
         <Hero embedded />
         <SystemsSection onInquire={goToContact} />

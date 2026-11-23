@@ -3,7 +3,7 @@
  * Todo el texto visible está acá (los datos de las demostraciones, en demoData.ts).
  */
 
-export const BRAND = "ALBA DIGITAL SOLUTIONS";
+export const BRAND = "ALBA ENGINE";
 
 export const SECTIONS = {
   sistemas: "sistemas",
